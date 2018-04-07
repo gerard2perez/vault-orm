@@ -1,0 +1,15 @@
+{
+  "name": "vault-orm",
+  "version": "0.0.0",
+  "description": "cross orm for node",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc"
+  },
+  "author": "Gerardo Pérez Pérez <gerard2perez@outlook.com>",
+  "license": "MIT",
+  "dependencies": {
+    "mongodb": "^3.0.5"
+  }
+}
