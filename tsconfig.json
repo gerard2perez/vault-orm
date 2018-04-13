@@ -1,14 +1,14 @@
 {
   "compilerOptions": {
+    "moduleResolution": "node",
     "module": "commonjs",
-    "outDir": "./dist",
+    "outDir": "./",
     "sourceMap": true,
-    "declaration": false,
-    "baseUrl": "src",
+    "declaration": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "target": "es2017",
-    "watch": true,
+    "watch": true
   },
   "include": [
     "src/**/*.ts"

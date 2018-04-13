@@ -3,13 +3,24 @@
   "version": "0.0.0",
   "description": "cross orm for node",
   "main": "index.js",
+  "typings": "index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc"
   },
   "author": "Gerardo Pérez Pérez <gerard2perez@outlook.com>",
   "license": "MIT",
+  "files": [
+    "*.d.ts",
+    "**/*.js",
+    "LICENSE"
+  ],
   "dependencies": {
-    "mongodb": "^3.0.5"
+    "mongodb": "^3.0.6",
+    "@types/mongodb": "^3.0.13"
+  },
+  "devDependencies": {
+    "@types/node": "^9.6.5",
+    "typescript": "^2.8.1"
   }
 }
