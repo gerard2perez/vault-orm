@@ -1,6 +1,6 @@
 {
   "name": "vault-orm",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "cross orm for node",
   "main": "index.js",
   "typings": "index.d.ts",
