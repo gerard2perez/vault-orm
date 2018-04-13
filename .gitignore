@@ -6,3 +6,4 @@ tmp
 !**/.gitkeep
 *.tgz
 **/*.d.ts
+resolvenextversion.js

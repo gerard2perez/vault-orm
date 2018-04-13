@@ -6,7 +6,9 @@
   "typings": "index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc"
+    "build": "tsc",
+    "gemfury":"node resolvenextversion gemfury",
+    "version": "node resolvenextversion version"
   },
   "author": "Gerardo Pérez Pérez <gerard2perez@outlook.com>",
   "license": "MIT",
