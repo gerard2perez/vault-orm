@@ -13,6 +13,7 @@
   "files": [
     "*.d.ts",
     "**/*.js",
+    "!resolvenextversion.js",
     "LICENSE"
   ],
   "dependencies": {
