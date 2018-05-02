@@ -5,10 +5,9 @@
   "main": "index.js",
   "typings": "index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
-    "gemfury":"node resolvenextversion gemfury",
-    "version": "node resolvenextversion version"
+    "gemfury": "releasenext gemfury",
+    "version": "releasenext version"
   },
   "author": "Gerardo Pérez Pérez <gerard2perez@outlook.com>",
   "license": "MIT",
@@ -19,10 +18,11 @@
     "LICENSE"
   ],
   "dependencies": {
-    "mongodb": "^3.0.6",
-    "@types/mongodb": "^3.0.13"
+    "@types/mongodb": "^3.0.13",
+    "mongodb": "^3.0.6"
   },
   "devDependencies": {
+    "releasenext": "git+https://github.com/gerard2p/releasenext.git",
     "@types/node": "^9.6.5",
     "typescript": "^2.8.1"
   }
