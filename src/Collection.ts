@@ -8,6 +8,9 @@ export class VaultCollection<T extends VaultModel> {
 	private cursor:Cursor<T>
 	constructor(classname:typeof VaultModel, colname?:string ) {
 		this.collectionName = colname || classname.collectionName;
+		if(!this.collectionName) {
+			throw new Error('No collectionName defined');
+		}
 		//@ts-ignore
 		classname.prototype.schema = classname.configuration;
 		//@ts-ignore

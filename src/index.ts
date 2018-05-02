@@ -8,11 +8,11 @@ export interface DatabaseConfiguration {
 	database:string
 }
 
-export function CollectionOfType(Model:typeof VaultModel) {
+export function CollectionOfType(Model:typeof VaultModel, collectionName?: string) {
 	return function (target: any, key: string) {
 	  Object.defineProperty(target, key, {
 		configurable: false,
-		value: new VaultCollection<VaultModel>(Model)
+		value: new VaultCollection<VaultModel>(Model, collectionName)
 	  });
 	}
   }
