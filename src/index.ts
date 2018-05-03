@@ -7,7 +7,6 @@ export interface DatabaseConfiguration {
 	port:number
 	database:string
 }
-
 export function CollectionOfType(Model:typeof VaultModel, collectionName?: string) {
 	return function (target: any, key: string) {
 	  Object.defineProperty(target, key, {
