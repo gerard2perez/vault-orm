@@ -42,7 +42,7 @@ export class VaultCollection<T extends VaultModel> {
 			for(const key of Object.keys(keys)) {
 				query[key] = keys[key];
 			}
-			item = Reflect.construct(this.BaseClass, [item]) as T;
+			item = Reflect.construct(this.BaseClass, [query]) as T;
 			item.save();
 		}
 		return item;
