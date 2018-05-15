@@ -43,8 +43,10 @@ export class VaultCollection<T extends VaultModel> {
 				query[key] = keys[key];
 			}
 			item = Reflect.construct(this.BaseClass, [query]) as T;
-			item.save();
-		}
+			await item.save();
+		} else {
+            item = Reflect.construct(this.BaseClass, [item]);
+        }
 		return item;
 	}
 	findAll(){
