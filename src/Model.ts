@@ -1,7 +1,13 @@
 import { Collection, ObjectId } from "mongodb";
-
+export interface IVaultField {
+	defaults?:any
+}
+export interface IValultConfiguration {
+	// __indexes__?:string[]
+	[p:string]:IVaultField
+}
 export class VaultModel  {
-	static configuration: any
+	static configuration: IValultConfiguration
 	static collectionName?:string
 	static schema?:any
 	/**
