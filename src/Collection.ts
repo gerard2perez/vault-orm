@@ -1,30 +1,49 @@
 import { Collection, Cursor, FilterQuery, ObjectId } from "mongodb";
 import { VaultModel } from "./model";
+import * as inflector from 'inflection';
+import debug from "./debug";
 
 export class VaultCollection<T extends VaultModel> {
 	collectionName?:string
 	private collection: Collection<T>
 	private BaseClass:any
 	private cursor:Cursor<T>
+	private __where__:FilterQuery<T> = {}
+	private __projection__:Object = {}
 	constructor(classname:typeof VaultModel, colname?:string ) {
 		this.collectionName = colname || classname.collectionName;
 		if(!this.collectionName) {
-			throw new Error('No collectionName defined');
+			let name = inflector.pluralize(classname.name.toLowerCase());
+			debug(`Using '${name}' as collectionName for model ${classname.name}`);
+			this.collectionName = name;
 		}
 		//@ts-ignore
 		classname.prototype.schema = classname.configuration;
 		//@ts-ignore
 		classname.prototype.collection = () => this.collection;
+		//@ts-ignore
+		classname.prototype.vaultCollection = () => this;
 		this.BaseClass = classname;
 	}
+	public fields (query: object) {
+		this.__projection__ = query;
+		return this;
+	}
 	private toArray(cursor: Cursor<T>) {
+		if(this.__projection__) {
+			cursor.project(this.__projection__);
+			this.__projection__ = undefined;
+		}
 		let rdn = Math.floor(Math.random()*1000);
 		let id = `toArray${rdn}`;
 		let results:T[] = [];
 		return new Promise(async (resolve, reject)=>{
 			let item = await cursor.next();
 			while(item) {
-				results.push(Reflect.construct(this.BaseClass, [item]) as T);
+				let created = Reflect.construct(this.BaseClass, [item]) as T;
+				//@ts-ignore
+				await created.loadRelation();
+				results.push(created);
 				item = await cursor.next();
 			}
 			resolve(results);
@@ -52,7 +71,6 @@ export class VaultCollection<T extends VaultModel> {
 	findAll(){
 		return this.toArray(this.collection.find<T>({}));
 	}
-	private __where__:FilterQuery<T> = {}
 	where(query:FilterQuery<T>={}) {
 		this.__where__['$and'] = this.__where__['$and'] || [];
 		this.__where__['$and'].push(query);

@@ -19,11 +19,15 @@
   ],
   "dependencies": {
     "@types/mongodb": "^3.0.13",
-    "mongodb": "^3.0.6"
+    "debug": "^3.1.0",
+    "inflection": "^1.12.0"
   },
   "devDependencies": {
-    "releasenext": "git+https://github.com/gerard2p/releasenext.git",
+    "@mysql/xdevapi": "^8.0.11",
+    "@types/inflection": "^1.5.28",
     "@types/node": "^9.6.5",
+    "mongodb": "^3.0.6",
+    "releasenext": "git+https://github.com/gerard2p/releasenext.git",
     "typescript": "^2.8.1"
   }
 }

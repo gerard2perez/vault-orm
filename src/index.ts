@@ -1,7 +1,12 @@
 import { VaultModel } from "./model";
-import { MongoClientOptions, Db, MongoClient } from "mongodb";
+import { MongoClientOptions, Db, MongoClient, ObjectId } from "mongodb";
 import { VaultCollection } from "./collection";
 
+export enum RelationMode {
+	id,
+	record
+}
+export declare type Id = ObjectId | string | number;
 export interface DatabaseConfiguration {
 	host:string
 	port:number
@@ -16,6 +21,7 @@ export function CollectionOfType(Model:typeof VaultModel, collectionName?: strin
 	}
   }
 export class VaultORM {
+	public static RelationsMode: RelationMode = RelationMode.record
 	private database: Db
 	ready: Promise<any>
 	constructor(configuration: DatabaseConfiguration, options?:MongoClientOptions) {

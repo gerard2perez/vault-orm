@@ -1,14 +1,10 @@
 import { Collection, ObjectId } from "mongodb";
-import { VaultCollection } from "./collection";
-import * as inflector from 'inflection';
-import { Related } from "./related";
-export interface IVaultField<T> {
-	kind:any
-	defaults?:T
-	unic?:boolean
+export interface IVaultField {
+	defaults?:any
 }
 export interface IValultConfiguration {
-	[p:string]:IVaultField<any>
+	// __indexes__?:string[]
+	[p:string]:IVaultField
 }
 export class VaultModel  {
 	static configuration: IValultConfiguration
@@ -20,34 +16,20 @@ export class VaultModel  {
 	private _id: ObjectId = null
 	get id () {
 		//@ts-ignore
-		return this._id as ObjectId;
+		return this._id as ObjectID;
 	}
 	updated: Date
 	created: Date
-	constructor(information:any={}){
+	constructor(information:any){
 		let Schema = Object.getPrototypeOf(this).schema;
-		let ClassName = this.constructor.name.toLowerCase();
 		let own_properties = ['_id', 'created', 'updated'].concat(Object.keys(Schema));
 		for(const property of own_properties ) {
 			if(information[property]) {
 				this[property] = information[property];
-			} else if(Schema[property] && Schema[property].defaults) {
-				this[property] = Schema[property].defaults;
+			} else if(Schema[property] && Schema[property].default) {
+				this[property] = Schema[property].default;
 			} else if (Schema[property]) {
 				this[property] = undefined;
-			}
-		}
-		for(const property of own_properties) {
-			if (Schema[property] && Schema[property].kind instanceof Related) {
-				if(this.id)
-					this[property] = Schema[property].kind.load(this._id,`${ClassName}Id`);
-			}
-		}
-	}
-	protected async loadRelation() {
-		for(const key of Object.getOwnPropertyNames(this)) {
-			if(this[key] instanceof Related) {
-				await this[key].relateds;
 			}
 		}
 	}
