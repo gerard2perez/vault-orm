@@ -4,6 +4,6 @@
     "ember": true,
     "**/*.js": true,
     "**/*.map": true,
-    "**/*.d.ts": true
+    "**/*.d.ts": false
   }
 }

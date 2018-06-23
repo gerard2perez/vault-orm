@@ -2,6 +2,7 @@ import { Collection, Cursor, FilterQuery, ObjectId } from "mongodb";
 import { VaultModel } from "./model";
 import * as inflector from 'inflection';
 import debug from "./debug";
+import { RelathionshipsSingle, RelationShipMode } from "./related";
 
 export class VaultCollection<T extends VaultModel> {
 	collectionName?:string
@@ -18,12 +19,47 @@ export class VaultCollection<T extends VaultModel> {
 			this.collectionName = name;
 		}
 		//@ts-ignore
-		classname.prototype.schema = classname.configuration;
+		classname.prototype.schema = { _id:{}, created:{}, updated:{}};
+		//@ts-ignore
+		classname.prototype.maskedSchema = { id:{}, created:{}, updated:{}};
+		//@ts-ignore
+		classname.prototype.relations = {};
 		//@ts-ignore
 		classname.prototype.collection = () => this.collection;
 		//@ts-ignore
 		classname.prototype.vaultCollection = () => this;
 		this.BaseClass = classname;
+	}
+	public setUpSchema(Schemas:any) {
+		let classname = this.BaseClass;
+		let rawSchema = classname.prototype.schema;
+		let maskedSchema = classname.prototype.maskedSchema;
+		let relations = classname.prototype.relations;
+		for(const prop of Object.keys(classname.configuration)) {
+			let property = classname.configuration[prop];
+			if ( property.kind instanceof RelathionshipsSingle  ) {
+				if ( property.kind.mode === RelationShipMode.belongsTo) {
+					property.kind.init('id', `${prop.toLowerCase()}Id`, property.kind.target);
+					// property.kind.initialize(classname, property.kind.target, `${prop.toLowerCase()}Id`);
+					rawSchema[property.kind.link] = property;
+				} else {
+					property.kind.init(`${classname.name.toLowerCase()}Id`, 'id', property.kind.target);
+					let proto = Schemas[property.kind.model.name].prototype;
+					proto.schema[property.kind.source] = property;
+					// property.kind.initialize(property.kind.target, classname, `${property.kind.target.constructor.name.toLowerCase()}Id`);
+				}
+				relations[prop] = property;
+			} else if(!rawSchema[prop]) {
+				rawSchema[prop] = property;
+			}
+			maskedSchema[prop] = property;
+		}
+		// //@ts-ignore
+		// classname.prototype.schema = rawSchema;
+		// //@ts-ignore
+		// classname.prototype.maskedSchema = maskedSchema;
+		// //@ts-ignore
+		// classname.prototype.relations = relations;
 	}
 	public fields (query: object) {
 		this.__projection__ = query;
@@ -41,8 +77,8 @@ export class VaultCollection<T extends VaultModel> {
 			let item = await cursor.next();
 			while(item) {
 				let created = Reflect.construct(this.BaseClass, [item]) as T;
-				//@ts-ignore
-				await created.loadRelation();
+				// // @ts-ignore
+				// await created.loadRelation();
 				results.push(created);
 				item = await cursor.next();
 			}
@@ -119,7 +155,7 @@ export class VaultCollection<T extends VaultModel> {
 	 */
 	firstOrDefault(queryOrId: string) : Promise<T>
 	firstOrDefault(queryOrId: FilterQuery<T>) : Promise<T>
-	firstOrDefault(queryOrId:any = {}) {
+	firstOrDefault(queryOrId?:any) {
 		if(!this.cursor) this.cursor = this.collection.find<T>();
 		if( typeof(queryOrId) === 'string' && queryOrId.length === 24) queryOrId = new ObjectId(queryOrId);
 		if(queryOrId instanceof ObjectId) {

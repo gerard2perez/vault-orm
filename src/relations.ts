@@ -1,7 +1,7 @@
 import { VaultModel, IVaultField } from "./model";
-import { Related, HasManyRelation, HasOneRelation } from "./related";
+import { Relathionships, HasManyRelation, HasOneRelation, Related, RelationShipMode, RelathionshipsSingle } from "./related";
 
-export function HasMany (model:typeof VaultModel, relation?:string) : IVaultField<Related> {
+export function HasMany (model:typeof VaultModel, relation?:string) : IVaultField<Relathionships> {
 	return {
 		unic:false,
 		kind: new HasManyRelation(model, relation),
@@ -9,14 +9,21 @@ export function HasMany (model:typeof VaultModel, relation?:string) : IVaultFiel
 	};
 }
 
-export function HasOne (model:typeof VaultModel, relation?:string) : IVaultField<Related> {
+export function hasOne (model:typeof VaultModel, relation?:string) : IVaultField<Relathionships> {
 	return {
 		unic:false,
-		kind: new HasOneRelation(model, relation),
+		kind: new RelathionshipsSingle(model,relation, RelationShipMode.hasOne),
 		defaults: undefined
 	};
 }
+export function belongsTo(model:typeof VaultModel, relation?:string) : IVaultField<Related<VaultModel>> {
+	return {
+		unic: false,
 
+		kind: new RelathionshipsSingle(model,relation, RelationShipMode.belongsTo),
+		defaults: undefined
+	}
+}
 export interface IIField<T> {
 	() : IVaultField<T>;
 	(defaults:T) : IVaultField<T>;

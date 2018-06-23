@@ -33,9 +33,16 @@ export class VaultORM {
 				let prototype = Object.getPrototypeOf(this);
 				let properties = Object.getOwnPropertyNames(prototype);
 				properties = properties.concat(Object.getOwnPropertyNames(this));
+				let BaseClasses = {};
 				for(const property of properties) {
 					if(this[property] instanceof VaultCollection) {
+						BaseClasses[this[property].BaseClass.name] = this[property].BaseClass;
 						collections.push(this.register(this.database, this[property]));
+					}
+				}
+				for(const property of properties) {
+					if(this[property] instanceof VaultCollection) {
+						this[property].setUpSchema(BaseClasses);
 					}
 				}
 				Promise.all(collections).then( ()=>{
