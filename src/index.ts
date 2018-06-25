@@ -25,14 +25,11 @@ export class VaultORM {
 	private database: Db
 	ready: Promise<any>
 	constructor(configuration: DatabaseConfiguration, options?:MongoClientOptions) {
-		let ownproperties;
 		this.ready = new Promise((resolve)=>{
 			MongoClient.connect(`mongodb://${configuration.host}:${configuration.port}`,options).then(client => {
 				this.database = client.db(configuration.database);
 				let collections = [];
-				let prototype = Object.getPrototypeOf(this);
-				let properties = Object.getOwnPropertyNames(prototype);
-				properties = properties.concat(Object.getOwnPropertyNames(this));
+				let properties = Object.getOwnPropertyNames(Object.getPrototypeOf(this));
 				let BaseClasses = {};
 				for(const property of properties) {
 					if(this[property] instanceof VaultCollection) {
@@ -42,7 +39,7 @@ export class VaultORM {
 				}
 				for(const property of properties) {
 					if(this[property] instanceof VaultCollection) {
-						this[property].setUpSchema(BaseClasses);
+						(this[property] as VaultCollection<VaultModel>).setUpSchema(BaseClasses);
 					}
 				}
 				Promise.all(collections).then( ()=>{
@@ -70,5 +67,3 @@ export class VaultORM {
 
 	}
 }
-let Schemas = {};
-

@@ -7,7 +7,9 @@
   "scripts": {
     "build": "tsc",
     "gemfury": "releasenext gemfury",
-    "version": "releasenext version"
+    "version": "releasenext version",
+    "test": "mocha test/*.test.ts --timeout 5000",
+    "test:live": "mocha test/*.test.ts --timeout 5000 --watch --watch-extensions ts"
   },
   "author": "Gerardo Pérez Pérez <gerard2perez@outlook.com>",
   "license": "MIT",
@@ -18,16 +20,21 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@types/mongodb": "^3.0.13",
+    "@types/mongodb": "^3.0.21",
     "debug": "^3.1.0",
     "inflection": "^1.12.0"
   },
   "devDependencies": {
     "@mysql/xdevapi": "^8.0.11",
+    "@types/chai": "^4.1.4",
     "@types/inflection": "^1.5.28",
-    "@types/node": "^9.6.5",
-    "mongodb": "^3.0.6",
+    "@types/mocha": "^5.2.3",
+    "@types/node": "^10.3.5",
+    "chai": "^4.1.2",
+    "mocha": "^5.2.0",
+    "mongodb": "^3.0.10",
     "releasenext": "git+https://github.com/gerard2p/releasenext.git",
-    "typescript": "^2.8.1"
+    "ts-node": "^7.0.0",
+    "typescript": "^2.9.2"
   }
 }

@@ -1,8 +1,5 @@
 import { Collection, ObjectId } from "mongodb";
-import { VaultCollection } from "./collection";
-import * as inflector from 'inflection';
-import { Relathionships, RelathionshipsSingle } from "./related";
-import { SSL_OP_CIPHER_SERVER_PREFERENCE } from "constants";
+import { RelationSingle } from "./related";
 import { VaultORM, RelationMode } from ".";
 import {inspect} from 'util';
 export interface IVaultField<T> {
@@ -14,15 +11,15 @@ export interface IValultConfiguration {
 	[p:string]:IVaultField<any>
 }
 
-enum IEntityState {
-	created,
-	modified,
-	unchanged,
-	deleted,
-	detached
+export enum IEntityState {
+	created = <any>'created',
+	modified= <any>'modified',
+	unchanged= <any>'unchanged',
+	deleted= <any>'deleted',
+	detached= <any>'detached',
 }
 export abstract class VaultModel  {
-	private state:IEntityState
+	static storage:WeakMap<VaultModel, any> = new WeakMap();
 	static configuration: IValultConfiguration
 	static collectionName?:string
 	static schema?:any
@@ -36,90 +33,77 @@ export abstract class VaultModel  {
 	}
 	updated: Date
 	created: Date
-	private static createProxy(un_proxy:any, OwnRelations) {
-		let Relations = Object.getPrototypeOf(un_proxy).relations;
-		let Schema = Object.getPrototypeOf(un_proxy).schema;
+	private static createProxy(un_proxy:any, OwnRelations:any, data:any) {
+		// let Relations = Object.getPrototypeOf(un_proxy).relations;
+		// let Schema = Object.getPrototypeOf(un_proxy).schema;
+		let {mask, raw, own, relations} = Object.getPrototypeOf(un_proxy).newSchema;
 		let proxied = new Proxy(un_proxy, {
 			get (target:any, property:any) {
-				if (Object.getOwnPropertyNames(Relations).includes(property)) {
-					if ( Relations[property].kind instanceof RelathionshipsSingle) {
-						return OwnRelations[property];
+				if (Object.getOwnPropertyNames(relations).includes(property)) {
+					if ( relations[property] instanceof RelationSingle) {
+						return (id) => relations[property](proxied, id);
 					} else {
-						return target[Relations[property]];
+						return relations[property](proxied);
 					}
 				} else {
-					return un_proxy[property];
+					return target[property];
 				}
 
 			},
-			set(obj, property, value) {
-				if(Relations[property] && Relations[property].kind instanceof RelathionshipsSingle) {
-					Relations[property].kind(value);
-				} else if (Schema[property]) {
-					obj[property] = value;
+			set (target, property, value) {
+				if(relations[property] && relations[property] instanceof RelationSingle) {
+					// relations[property].kind(value);
+					return false;
+				} else if (raw[property]) {
+					target[property] = value;
 				} else {
 					throw new Error(`That property '${property.toString()}' does not exist in ${un_proxy.constructor.name}`);
 				}
 				return true;
 			}
 		});
+		VaultModel.storage.set(proxied, data);
 		return proxied;
 	}
 	constructor(information:any={}){
 		let un_proxy = this;
-		let Schema = Object.getPrototypeOf(this).schema;
-		let Relations = Object.getPrototypeOf(this).relations;
-		let own_properties = Object.keys(Schema).concat(Object.keys(Relations));
+		let data = {
+			save_hooks: [],
+			state: IEntityState.unchanged
+		};
+		// let Schema = Object.getPrototypeOf(this).schema;
+		// let Relations = Object.getPrototypeOf(this).relations;
+		// let own_properties = Object.keys(Schema).concat(Object.keys(Relations));
+		let own_properties = Object.keys(Object.getPrototypeOf(this).newSchema.raw);
 		let OwnRelations = {};
 		for(const property of own_properties ) {
 			this[property] = information[property] || undefined;
-			// if(information[property]) {
-			// 	this[property] = information[property];
-			// } else if(Schema[property] && Schema[property].defaults) {
-			// 	this[property] = Schema[property].defaults;
+			// if(Relations[property] && Relations[property].kind instanceof RelationOneToOne) {
+			// 	OwnRelations[property] = (id) => Relations[property].kind(un_proxy, id);
 			// }
-			//  else if (Schema[property]) {
-			// 	this[property] = undefined;
-			// }
-			if(Relations[property] && Relations[property].kind instanceof RelathionshipsSingle) {
-				OwnRelations[property] = (id) => Relations[property].kind(un_proxy, id);
-			}
 		}
-		if(un_proxy._id)un_proxy.state = IEntityState.unchanged;
-		return VaultModel.createProxy(un_proxy, OwnRelations);
-	}
-	protected async loadRelation() {
-		for(const key of Object.getOwnPropertyNames(this)) {
-			if(this[key] instanceof Relathionships) {
-				await this[key].relateds;
-			}
-		}
+		return VaultModel.createProxy(un_proxy, OwnRelations, data);
 	}
 	async json () {
-		let Schema = Object.getPrototypeOf(this).maskedSchema;
+		let {mask, raw, own, relations} = Object.getPrototypeOf(this).newSchema;
 		let jsoned = {};
-		for(const property of Object.keys(Schema)) {
+		for(const property of Object.keys(mask)) {
+			// console.log(property, this[property], this[property] instanceof RelationSingle);
 			jsoned[property] = await this[property] || null;
 			if(jsoned[property] instanceof Function) {
 				let ijson = await jsoned[property](true);
 				if(ijson && ijson.json)ijson = await ijson.json();
 				jsoned[property] = !ijson ? null : (VaultORM.RelationsMode === RelationMode.id ? ijson.id : ijson);
+				jsoned[property] = jsoned[property] || null;
 			}
 		}
 		return jsoned;
 	}
 	protected toJSON() {
 		throw new Error('You must first convert the object to json object using .json(), please note this is an async function');
-		// let Schema = Object.getPrototypeOf(this).maskedSchema;
-		// let own_properties = Object.keys(Schema);
-		// let jsoned = {};
-		// for(const property of own_properties ) {
-		// 	jsoned[property] = this[property];
-		// }
-		// return jsoned;
 	}
 	[inspect.custom](depth) {
-		let Schema = Object.getPrototypeOf(this).maskedSchema;
+		let Schema = Object.getPrototypeOf(this).newSchema.mask;
 		let own_properties = Object.keys(Schema);
 		let jsoned = {};
 		for(const property of own_properties ) {
@@ -131,24 +115,32 @@ export abstract class VaultModel  {
 		return this[inspect.custom](...args);
     }
 	async save(){
-		console.log(this.state.toString());
-		let Schema = Object.getPrototypeOf(this).schema;
+		// console.log(VaultModel.storage.get(this).save_hooks);
+		// if ( VaultModel.storage.get(this).state === IEntityState.unchanged )return false;
+		let {mask, raw, own, relations} = Object.getPrototypeOf(this).newSchema;
 		if(!this.updated)this.created = new Date();
 		this.updated = new Date();
 		let collection = (Object.getPrototypeOf(this).collection() as Collection);
 		let update_object = {};
-		for(const key of Object.keys(Schema)) {
+		for(const key of Object.keys(raw)) {
 			if(key === '_id')continue;
-			update_object[key] = this[key] || Schema[key].defaults;
+			update_object[key] = this[key] || raw[key].defaults;
 		}
-		if(this.id === null) {
-			return collection.insertOne(update_object).then((inserted)=>{
+		let hooks = VaultModel.storage.get(this).save_hooks.map(h=>h());
+		// for(const relation of Object.keys(Relations)) {
+		// 	if(Relations[relation].kind instanceof RelationHasOne) {
+		// 		console.log('proced save');
+		// 	}
+		// }
+		let result = Promise.resolve(false);
+		if(!this.id) {
+			result = collection.insertOne(update_object).then((inserted)=>{
 				//@ts-ignore
 				this._id = inserted.insertedId;
 				return true;
 			});
 		} else {
-			return collection.findOneAndUpdate({_id:this.id},update_object).then(error=>{
+			result = collection.findOneAndUpdate({_id:this.id},update_object).then(error=>{
 				if(!error.lastErrorObject.updatedExisting) {
 					console.log(error, {_id:this.id},update_object);
 					throw new Error(error.lastErrorObject);
@@ -156,6 +148,12 @@ export abstract class VaultModel  {
 				return true;
 			});
 		}
+		// console.log('-----------');
+		// console.log(hooks);
+		return Promise.all([result, ...hooks]).then(r=>{
+			VaultModel.storage.get(this).save_hooks = [];
+			return r[0];
+		});
 	}
 	async delete() {
 		let collection = (Object.getPrototypeOf(this).collection() as Collection);

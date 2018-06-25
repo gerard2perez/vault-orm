@@ -1,26 +1,29 @@
 import { VaultModel, IVaultField } from "./model";
-import { Relathionships, HasManyRelation, HasOneRelation, Related, RelationShipMode, RelathionshipsSingle } from "./related";
+import { Related, RelationShipMode, Collection, RelationSingle, HasManyRelation } from "./related";
 
-export function HasMany (model:typeof VaultModel, relation?:string) : IVaultField<Relathionships> {
+export function hasMany (model:string, relation?:string) : IVaultField<Collection<VaultModel>> {
 	return {
 		unic:false,
-		kind: new HasManyRelation(model, relation),
+		//@ts-ignore
+		kind: new HasManyRelation('_id',relation, null, model, RelationShipMode.hasMany),
 		defaults: undefined
 	};
 }
 
-export function hasOne (model:typeof VaultModel, relation?:string) : IVaultField<Relathionships> {
+export function hasOne (model:string, relation?:string) : IVaultField<Related<VaultModel>> {
+
 	return {
 		unic:false,
-		kind: new RelathionshipsSingle(model,relation, RelationShipMode.hasOne),
+		// @ts-ignore
+		kind: new RelationSingle('_id',relation, null, model, RelationShipMode.hasOne), // new RelationHasOne(model,relation, RelationShipMode.hasOne),
 		defaults: undefined
 	};
 }
-export function belongsTo(model:typeof VaultModel, relation?:string) : IVaultField<Related<VaultModel>> {
+export function belongsTo(model:string, relation?:string) : IVaultField<Related<VaultModel>> {
 	return {
 		unic: false,
-
-		kind: new RelathionshipsSingle(model,relation, RelationShipMode.belongsTo),
+		// @ts-ignore
+		kind: new RelationSingle(relation, '_id', null, model, RelationShipMode.belongsTo),
 		defaults: undefined
 	}
 }

@@ -7,13 +7,18 @@
     "declaration": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "target": "es2017",
+    "target": "es2018",
+    "lib":[
+      "es2017",
+      "es2018"
+    ],
     "watch": true
   },
   "include": [
     "src/**/*.ts"
   ],
   "exclude": [
+    "test",
     "node_modules",
     "dist"
   ]
