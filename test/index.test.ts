@@ -1,20 +1,14 @@
-import * as Mocha from 'mocha';
 import { TestContext } from './context';
 import { Rol } from './context/rol';
-import { expect, assert } from 'chai';
-import { Rigth } from './context/rigth';
-import { prototype } from 'events';
-import { CLIENT_RENEG_LIMIT } from 'tls';
-import { VaultORM } from '../src';
-import { VaultModel } from '../src/model';
+import { expect } from 'chai';
+import { VaultModel } from '../src/adapters/mongo';
 import { Post } from './context/post';
-import { User } from './context/user';
 function rdn() {
 	return [3,5,1][Math.floor(Math.random()*3)];
 }
 describe('Mongo Adapter', () =>{
 	it('waits database to initialize', async () => {
-		await TestContext.ready;
+		await TestContext.ready();
 		await Promise.all([
 			TestContext.rols.remove({}),
 			TestContext.rigths.remove({}),
@@ -23,7 +17,6 @@ describe('Mongo Adapter', () =>{
 		]);
 	});
 	it('Appends Properties to Prototype', async() => {
-		// console.log(User.prototype.newSchema);
 		let schema = expect(Rol.prototype).to.have.property('newSchema');
 		schema.does.have.property('mask').that.has.all.keys('id', 'created', 'updated', 'name', 'user', 'rigth', 'rdn');
 		schema.does.have.property('raw').that.has.all.keys('_id', 'created', 'updated', 'name', 'userId', 'rdn');

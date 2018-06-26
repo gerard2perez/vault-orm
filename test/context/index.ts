@@ -1,4 +1,4 @@
-import { VaultORM, CollectionOfType, RelationMode } from '../../src';
+import { VaultORM, CollectionOfType, RelationMode, DatabaseDriver } from '../../src';
 import { VaultCollection } from '../../src/collection';
 import { Rigth } from './rigth';
 import { Rol } from './rol';
@@ -16,6 +16,7 @@ class TestContext extends VaultORM {
 	@CollectionOfType(Post) posts: VaultCollection<Post>
 }
 const Context =  new TestContext({
+	driver: DatabaseDriver.mongo,
     database: 'test_vault_orm',
     port: 27017,
     host: 'localhost'

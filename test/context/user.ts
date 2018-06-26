@@ -1,4 +1,4 @@
-import { VaultModel } from '../../src/model';
+import { VaultModel } from '../../src/adapters/mongo';
 import { hasMany, String, Boolean, Number, Json, belongsTo, hasOne } from '../../src/relations';
 import { Related, Collection } from '../../src/related';
 import { Post } from './post';

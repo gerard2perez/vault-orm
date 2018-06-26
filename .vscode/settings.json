@@ -2,9 +2,10 @@
   "files.exclude": {
     "node_modules": true,
     "ember": true,
+    "adapters": true,
     "**/*.js": true,
     "**/*.map": true,
-    "**/*.d.ts": false
+    "**/*.d.ts": true
   },
   "typescript.tsdk": "node_modules\\typescript\\lib"
 }

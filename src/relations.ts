@@ -1,4 +1,4 @@
-import { VaultModel, IVaultField } from "./model";
+import { VaultModel, IVaultField } from "./adapters/mongo";
 import { Related, RelationShipMode, Collection, RelationSingle, HasManyRelation } from "./related";
 
 export function hasMany (model:string, relation?:string) : IVaultField<Collection<VaultModel>> {

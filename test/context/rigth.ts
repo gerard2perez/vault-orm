@@ -1,5 +1,5 @@
-import { VaultModel } from '../../src/model';
-import { HasMany, String, Boolean, Number, Json, belongsTo, hasOne } from '../../src/relations';
+import { VaultModel } from '../../src/adapters/mongo';
+import { String, Boolean, Number, Json, belongsTo, hasOne } from '../../src/relations';
 import { Related } from '../../src/related';
 import { Rol } from './rol';
 export class Rigth extends VaultModel {
