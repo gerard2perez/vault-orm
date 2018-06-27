@@ -3,9 +3,28 @@ import { DatabaseConfiguration } from '..';
 import { VaultCollection } from '../collection';
 import { VaultModel, IVaultModel } from '../model';
 import { Database } from '../database';
-import { UUID } from './uuid';
-
-
+import { UUID, uuid } from './uuid';
+interface Result {
+	getAffectedItemsCount():number
+	getAffectedRowsCount():number
+	getAutoIncrementValue():number
+	getGeneratedIds():uuid[]
+	getWarnings():any[]
+	getWarningsCount():number
+}
+interface MysqlXCollection<T> {
+	add(expr?:string):any
+	find(expr?:string):any
+	modify(expr?:string):any
+	remove(expr?:string):any
+	addOrReplaceOne(id:uuid, data:Partial<T>):Promise<Result>
+	createIndex(name:string, data:any): Promise<boolean>
+	dropIndex(name:string): Promise<boolean>
+	existsInDatabase(): Promise<boolean>
+	getOne(id:uuid) : Promise<T>
+	removeOne(id:uuid) : Promise<Result>
+	replaceOne(id:uuid, data:Partial<T>):Promise<Result>
+}
 
 export class DataBase implements Database<any> {
 	database: any
@@ -39,18 +58,46 @@ export class DataBase implements Database<any> {
 	}
 }
 
-function toQuery(obj:any) {
-	let query = '';
-	for(const key of Object.keys(obj)) {
-		query += `${key} = '${obj[key]}'`;
-	}
-	return query || 'true';
+function toQuery(obj:any = {}) {
+	let {$and=[], $or=[]} = obj;
+	let query = [
+		$and.map( $a => {
+			let pre = [];
+			for(const key of Object.keys($a)) {
+				switch(typeof $a[key]) {
+					case 'string':
+						pre.push(`${key} = '${$a[key]}'`);
+						break;
+					default :
+						pre.push(`${key} = ${$a[key]}`);
+						break;
+				}
+			}
+			return `(${pre.join(' and ')})`;
+		}).join(' and '),
+		$or.map( $o => {
+			let pre = [];
+			for(const key of Object.keys($o)) {
+				pre.push(`${key} = '${$o[key]}'`);
+			}
+			return `(${pre.join(' and ')})`;
+		}).join(' or '),
+	].filter(f=>f);
+	return query.join(' or ') || 'true';
 }
 export class Model extends VaultModel {
-	protected async persist(connection:any, update_object:any) {
+	protected async persist(connection:MysqlXCollection<Model>, update_object:any) {
+		update_object.created = (update_object.created as Date).toUTCString();
+		update_object.updated = (update_object.updated as Date).toUTCString();
 		if (this._id) {
-			console.log(update_object);
-			return Promise.resolve(false);
+			let modify = connection.modify(`_id = '${this._id}'`);
+			for(const key of Object.keys(update_object)) {
+				modify = modify.set(key, update_object[key]);
+			}
+			return modify.execute(console.log).then(res=>{
+				if(res.getAffectedRowsCount() === 1)return update_object._id;
+				return false;
+			});
 		} else {
 			update_object._id = UUID();
 			return connection.add(update_object).execute().then(res=>{
@@ -64,6 +111,27 @@ export class Model extends VaultModel {
 	}
 }
 export class MySqlXCollection<T extends VaultModel> extends VaultCollection<T> {
+	protected cursor: any
+	// @ts-ignore
+	protected collection: MysqlXCollection<T>
+	// @ts-ignore
+	protected __where__:any
+	protected __limit_:number
+	protected __skip_:number
+	where(query: Partial<T> = {}) {
+		this.__where__['$and'] = this.__where__['$and'] || [];
+		this.__where__['$and'].push(query);
+		return this;
+	}
+	orWhere(query: Partial<T>) {
+		this.__where__['$or'] = this.__where__['$or'] || [];
+		this.__where__['$or'].push(query);
+		if (this.__where__['$and']) {
+			this.__where__['$or'].push({ '$and': this.__where__['$and'] });
+			delete this.__where__['$and'];
+		}
+		return this;
+	}
 	// public fields(query: object) {
 	// 	this.__projection__ = query;
 	// 	return this;
@@ -88,13 +156,13 @@ export class MySqlXCollection<T extends VaultModel> extends VaultCollection<T> {
 	// 		resolve(results);
 	// 	}) as Promise<T[]>;
 	// }
-	// async remove(query: FilterQuery<T>) {
+	// async remove(query: Partial<T>) {
 	// 	return (await this.collection.remove(query)).result;
 	// }
-	// async update(query: FilterQuery<T>, keys?: Object) {
+	// async update(query: Partial<T>, keys?: Object) {
 	// 	return (await this.collection.update(query, keys)).result;
 	// }
-	// async findOrCreate(query: FilterQuery<T>, keys: Object={}) {
+	// async findOrCreate(query: Partial<T>, keys: Object={}) {
 	// 	let item = await this.collection.findOne(query);
 	// 	if (!item) {
 	// 		for (const key of Object.keys(keys)) {
@@ -113,7 +181,12 @@ export class MySqlXCollection<T extends VaultModel> extends VaultCollection<T> {
 			cursor.execute(doc => {
 				let created = Reflect.construct(this.BaseClass, [doc]) as T;
 				results.push(created);
-			}).then(() => resolve(results));
+			}).then(() => {
+				this.__where__ = {};
+				this.__limit_ = undefined;
+				this.__projection__ = {};
+				resolve(results);
+			});
 		});
 	}
 	async remove(query: Partial<T>) {
@@ -123,22 +196,37 @@ export class MySqlXCollection<T extends VaultModel> extends VaultCollection<T> {
 	}
 	findAll() {
 		return this.toArray(this.collection.find());
-		// @ts-ignore
-		// return this.collection.find().execute(console.log, console.log);
-		// @ts-ignore
-		// return this.collection.find().execute(function (doc) {
-			// Print document
-			// console.log(new Date(), doc);
-			// return doc;
-		//   }, console.log);
-		// return this.toArray(this.collection.find<T>({}));
 	}
-	// where(query: FilterQuery<T> = {}) {
+	findOne(): Promise<T>
+	findOne(StringId: string): Promise<T>
+	findOne(query: Partial<T>): Promise<T>
+	/**@alias firstOrDefault */
+	findOne(queryOrId?: any) {
+		return this.firstOrDefault(queryOrId);
+	}
+	firstOrDefault(): Promise<T>
+	firstOrDefault(Id: uuid): Promise<T>
+	firstOrDefault(query: Partial<T>): Promise<T>
+	firstOrDefault(queryOrId?: any) {
+		// if (!this.cursor) this.cursor = this.collection.find();
+		if (typeof (queryOrId) === 'string' && queryOrId.length === 32) queryOrId = { _id: queryOrId };
+		if (queryOrId && typeof (queryOrId) === 'object') {
+			this.where(queryOrId);
+			// this.cursor.find(this.__where__);
+		}
+		this.__limit_ = 1;
+		// this.cursor.limit(1);
+		return this.execute(this.__where__).then(results => results[0]);
+	}
+	protected execute(where:any) {
+		return this.toArray(this.collection.find(toQuery(this.__where__)).limit(this.__limit_));
+	}
+	// where(query: Partial<T> = {}) {
 	// 	this.__where__['$and'] = this.__where__['$and'] || [];
 	// 	this.__where__['$and'].push(query);
 	// 	return this;
 	// }
-	// orWhere(query: FilterQuery<T>) {
+	// orWhere(query: Partial<T>) {
 	// 	this.__where__['$or'] = this.__where__['$or'] || [];
 	// 	this.__where__['$or'].push(query);
 	// 	if (this.__where__['$and']) {
@@ -165,36 +253,10 @@ export class MySqlXCollection<T extends VaultModel> extends VaultCollection<T> {
 	// 	return this;
 	// }
 	// findOne(): Promise<T>
-	// findOne(Id: ObjectId): Promise<T>
+	// findOne(Id: uuid): Promise<T>
 	// /**
-	//  * String that respresnents an ObjectId
+	//  * String that respresnents an uuid
 	//  */
-	// findOne(StringId: string): Promise<T>
-	// findOne(query: FilterQuery<T>): Promise<T>
-	// /**@alias firstOrDefault */
-	// findOne(queryOrId?: any) {
-	// 	return this.firstOrDefault(queryOrId);
-	// }
-	// firstOrDefault(): Promise<T>
-	// firstOrDefault(Id: ObjectId): Promise<T>
-	// /**
-	//  * String that respresnents an ObjectId
-	//  */
-	// firstOrDefault(StringId: string): Promise<T>
-	// firstOrDefault(query: FilterQuery<T>): Promise<T>
-	// firstOrDefault(queryOrId?: any) {
-	// 	if (!this.cursor) this.cursor = this.collection.find<T>();
-	// 	if (typeof (queryOrId) === 'string' && queryOrId.length === 24) queryOrId = new ObjectId(queryOrId);
-	// 	if (queryOrId instanceof ObjectId) {
-	// 		queryOrId = { _id: queryOrId }
-	// 	}
-	// 	if (queryOrId && typeof (queryOrId) === 'object') {
-	// 		this.where(queryOrId);
-	// 		this.cursor.filter(this.__where__);
-	// 	}
-	// 	this.cursor.limit(1);
-	// 	return this.execute(this.__where__).then(results => results[0]);
-	// }
 	// find() {
 	// 	return this.execute(this.__where__);
 	// }

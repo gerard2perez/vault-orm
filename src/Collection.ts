@@ -50,7 +50,7 @@ export class VaultCollection<T extends VaultModel> {
 					mask[prop] = rprop;
 				}
 				relations[prop] = mask[prop];
-			} else if(property.kind instanceof HasManyRelation) {
+			} else if (property.kind instanceof HasManyRelation) {
 				let model = Schemas[property.kind.parentModel];
 				let rprop: RelationSingle = property.kind.init(`${classname.name.toLowerCase()}Id`, null, model) as RelationSingle;
 				let proto = model.prototype;
@@ -94,7 +94,7 @@ export class VaultCollection<T extends VaultModel> {
 	async update(query: FilterQuery<T>, keys?: Object) {
 		return (await this.collection.update(query, keys)).result;
 	}
-	async findOrCreate(query: FilterQuery<T>, keys: Object={}) {
+	async findOrCreate(query: FilterQuery<T>, keys: Object = {}) {
 		let item = await this.collection.findOne(query);
 		if (!item) {
 			for (const key of Object.keys(keys)) {
@@ -194,13 +194,13 @@ export class VaultCollection<T extends VaultModel> {
 		return this.toArray(execution_cursor);
 	}
 	count(applySkipLimit: boolean = false) {
-		let count:Promise<number>;
+		let count: Promise<number>;
 		if (this.cursor) {
 			count = this.cursor.filter(this.__where__).count(applySkipLimit);
 		} else {
 			count = this.collection.find(this.__where__).count(applySkipLimit);
 		}
-		return count.finally(()=>{
+		return count.finally(() => {
 			this.cursor = null;
 			this.__where__ = {};
 		});
