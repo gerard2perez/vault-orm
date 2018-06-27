@@ -50,13 +50,13 @@ describe('MySQl XDevAPI Adapter', () => {
 		expect(await TestContext.rols.firstOrDefault({rdn: 10}), 'record removed').to.be.undefined;
 
 		expect(await new Rol({name:'r21'}).save()).eq(true);
-		await TestContext.rols.remove({name: 'r21'});
+		expect(await TestContext.rols.remove({name: 'r21'})).eq(true);
 		expect(await TestContext.rols.count()).eq(20);
 
 	});
 	it('Query Engine', async () => {
-		expect(await TestContext.rols.where({name:'r20'}).find(), 'Check length').to.have.lengthOf(1);
-		expect(await TestContext.rols.where({rdn:3}).find(), 'Check length').to.have.lengthOf.above(1);
+		expect(await TestContext.rols.where({name:'r20'}).find(), 'Check length 1').to.have.lengthOf(1);
+		expect(await TestContext.rols.where({rdn:3}).find(), 'Check length 2').to.have.lengthOf.above(1);
 		expect(await TestContext.rols.where({rdn:3}).orWhere({rdn:1}).orWhere({rdn:5}).find(), 'Check length').to.have.lengthOf(20);
 	});
 	it('Skip Limit', async () => {
