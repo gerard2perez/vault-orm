@@ -1,5 +1,5 @@
 import { Collection, Cursor, FilterQuery, ObjectId } from "mongodb";
-import { VaultModel } from "./adapters/mongo";
+import { VaultModel } from "./model";
 import * as inflector from 'inflection';
 import debug from "./debug";
 import { RelationShipMode, RelationSingle, HasManyRelation } from "./related";

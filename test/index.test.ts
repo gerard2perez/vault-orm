@@ -1,7 +1,7 @@
 import { TestContext } from './context';
 import { Rol } from './context/rol';
 import { expect } from 'chai';
-import { VaultModel } from '../src/adapters/mongo';
+import { VaultModel } from '../src/model';
 import { Post } from './context/post';
 function rdn() {
 	return [3,5,1][Math.floor(Math.random()*3)];

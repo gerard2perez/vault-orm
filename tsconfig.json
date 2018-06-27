@@ -18,6 +18,7 @@
     "src/**/*.ts"
   ],
   "exclude": [
+    "**/*.d.ts",
     "test",
     "node_modules",
     "dist"

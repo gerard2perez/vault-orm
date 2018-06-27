@@ -1,6 +1,6 @@
 import { VaultORM, RelationMode } from ".";
 import { VaultCollection } from "./collection";
-import { VaultModel, IEntityState } from "./adapters/mongo";
+import { VaultModel, IEntityState } from "./model";
 import { isBoolean } from "util";
 export enum RelationShipMode {
 	hasMany = 'hasmany',

@@ -1,5 +1,5 @@
 import { TestContext } from './mysql-x';
-import { VaultModel } from '../src/adapters/mongo';
+import { VaultModel } from '../src/model';
 import { User } from './mysql-x/user';
 import { Rol } from './mysql-x/rol';
 import { expect } from 'chai';
@@ -8,7 +8,7 @@ import { Post } from './context/post';
 function rdn() {
 	return [3,5,1][Math.floor(Math.random()*3)];
 }
-describe('MySQl XDevAPI', () => {
+describe('MySQl XDevAPI Adapter', () => {
 	it('waits database to initialize', async () => {
 		await TestContext.ready();
 		await Promise.all([

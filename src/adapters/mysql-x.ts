@@ -1,29 +1,28 @@
 import * as mysqlx from '@mysql/xdevapi';
 import { DatabaseConfiguration } from '..';
 import { VaultCollection } from '../collection';
-import { VaultModel } from './mongo';
-import * as crypto from 'crypto';
-import { performance } from 'perf_hooks';
+import { VaultModel, IVaultModel } from '../model';
+import { Database } from '../database';
 import { UUID } from './uuid';
 
 
 
-export class DataBase {
-	database:any;
+export class DataBase implements Database<any> {
+	database: any
+	ready: Promise<any>
 	constructor (private orm:any, configuration:DatabaseConfiguration) {
-		this.database = mysqlx.getSession(configuration).then(session=>{
+		this.ready = mysqlx.getSession(configuration).then(session=>{
 			return session.getSchemas().then(schemas=>{
 				if ( schemas.map(s=>s.getName()).includes(configuration.database) ) {
 					return session.getSchema(configuration.database);
 				} else {
 					return session.createSchema(configuration.database);
 				}
+			}).then(schema=>{
+				this.database = schema;
+				return schema;
 			});
 		});
-	}
-	async ready() {
-		this.database = await this.database;
-		return this.database;
 	}
 	register (collection:VaultCollection<any>) {
 		const collectionName = collection.collectionName || collection.constructor.name;
@@ -39,9 +38,6 @@ export class DataBase {
 		});
 	}
 }
-export function connect(configuration:DatabaseConfiguration)  {
-	return mysqlx.getSession(configuration).then(session=>session.createSchema(configuration.database));
-}
 
 function toQuery(obj:any) {
 	let query = '';
@@ -49,6 +45,23 @@ function toQuery(obj:any) {
 		query += `${key} = '${obj[key]}'`;
 	}
 	return query || 'true';
+}
+export class Model extends VaultModel {
+	protected async persist(connection:any, update_object:any) {
+		if (this._id) {
+			console.log(update_object);
+			return Promise.resolve(false);
+		} else {
+			update_object._id = UUID();
+			return connection.add(update_object).execute().then(res=>{
+				if(res.getAffectedItemsCount() === 1)return update_object._id;
+				return false;
+			});
+		}
+	}
+	protected async save_relation(update_object) {
+		return Promise.resolve(false);
+	}
 }
 export class MySqlXCollection<T extends VaultModel> extends VaultCollection<T> {
 	// public fields(query: object) {
