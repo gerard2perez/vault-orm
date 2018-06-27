@@ -106,6 +106,10 @@ export class Model extends VaultModel {
 			});
 		}
 	}
+	protected async destroy(connection:MysqlXCollection<Model>) {
+		// @ts-ignore
+		return connection.removeOne(this._id).then(res=>res.getAffectedRowsCount() === 1);
+	}
 	protected async save_relation(update_object) {
 		return Promise.resolve(false);
 	}

@@ -1,34 +1,29 @@
 import { RelationSingle } from "../related";
 import { VaultORM, RelationMode, DatabaseConfiguration } from "../";
-import {inspect} from 'util';
+import { inspect } from 'util';
 import { MongoClientOptions, Db, Collection, MongoClient, ObjectId } from "mongodb";
 import { VaultCollection } from "../collection";
 import { Database } from "../database";
 import { VaultModel, IVaultModel } from "../model";
-export function connect(configuration:DatabaseConfiguration, options?:MongoClientOptions)  {
-	return MongoClient.connect(`mongodb://${configuration.host}:${configuration.port}`,options).then(client => {
-		return client.db(configuration.database);
-	});
-}
 export class DataBase implements Database<Db> {
 	database: Db
 	ready: Promise<Db>
-	constructor(private orm:any, configuration:DatabaseConfiguration, options:MongoClientOptions) {
-		this.ready = MongoClient.connect(`mongodb://${configuration.host}:${configuration.port}`,options).then(client => {
+	constructor(private orm: any, configuration: DatabaseConfiguration, options: MongoClientOptions) {
+		this.ready = MongoClient.connect(`mongodb://${configuration.host}:${configuration.port}`, options).then(client => {
 			this.database = client.db(configuration.database);
 			return this.database
 		});
 	}
-	register(collection:VaultCollection<any>) {
+	register(collection: VaultCollection<any>) {
 		const collectionName = collection.collectionName || collection.constructor.name;
 		//@ts-ignore
 		let indexes = collection.BaseClass.configuration.__indexes__ || [];
-		return new Promise((resolve, reject)=>{
-			this.database.createCollection(collectionName, async function(err, col) {
-				if(err)reject(err);
+		return new Promise((resolve, reject) => {
+			this.database.createCollection(collectionName, async function (err, col) {
+				if (err) reject(err);
 				// @ts-ignore
 				collection.collection = col;
-				for(const index of indexes) {
+				for (const index of indexes) {
 					await col.createIndex(index);
 				}
 				resolve(col);
@@ -37,7 +32,7 @@ export class DataBase implements Database<Db> {
 	}
 }
 export class Model extends VaultModel {
-	constructor(information:any={}){
+	constructor(information: any = {}) {
 		super(information);
 		// let un_proxy = this;
 		// let data = {
@@ -51,7 +46,7 @@ export class Model extends VaultModel {
 		// }
 		// return VaultModel.createProxy(un_proxy, OwnRelations, data);
 	}
-	protected async persist(connection:any, update_object:any) {
+	protected async persist(connection: any, update_object: any) {
 		if (!this.id) {
 			return connection.insertOne(update_object).then((inserted) => {
 				return inserted.insertedId;
@@ -69,16 +64,7 @@ export class Model extends VaultModel {
 	protected async save_relation(update_object) {
 		return Promise.resolve(false);
 	}
-	async delete() {
-		let collection = (Object.getPrototypeOf(this).collection() as Collection);
-		return collection.deleteOne({_id:this._id}).then(result=>{
-			if (result.deletedCount === 1) {
-				//@ts-ignore
-				this._id = null;
-				return true;
-			} else {
-				throw new Error(JSON.stringify(result, null, 2));
-			}
-		});
+	protected async destroy(connection: any) {
+		return connection.deleteOne({ _id: this._id }).then(result => result.deletedCount === 1);
 	}
 }

@@ -19,6 +19,7 @@ export enum IEntityState {
 }
 export class IVaultModel {
 	protected persist(connection:any, update_object:any): Promise<boolean> { throw new Error('Not Implemented'); }
+	protected destroy(connection:any): Promise<boolean> { throw new Error('Not Implemented'); }
 	protected save_relation(update_object:any): Promise<boolean>{ throw new Error('Not Implemented'); }
 }
 export abstract class VaultModel extends IVaultModel {
@@ -150,16 +151,19 @@ export abstract class VaultModel extends IVaultModel {
 			return 	!!this._id;
 		});
 	}
-	async delete() {
-		let collection = (Object.getPrototypeOf(this).collection() as Collection);
-		return collection.deleteOne({ _id: this._id }).then(result => {
-			if (result.deletedCount === 1) {
-				//@ts-ignore
-				this._id = null;
-				return true;
-			} else {
-				throw new Error(JSON.stringify(result, null, 2));
-			}
-		});
+	delete() {
+		return this.destroy(Object.getPrototypeOf(this).collection()).then(success => {
+			if(success)this._id = null;
+			return success;
+		}).catch(res => { throw new Error(JSON.stringify(res, null, 2)); });
+		// return collection.deleteOne({ _id: this._id }).then(result => {
+		// 	if (result.deletedCount === 1) {
+		// 		//@ts-ignore
+		// 		this._id = null;
+		// 		return true;
+		// 	} else {
+		// 		throw new Error(JSON.stringify(result, null, 2));
+		// 	}
+		// });
 	}
 }
