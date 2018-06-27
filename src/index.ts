@@ -1,7 +1,7 @@
 import * as mongo from "./adapters/mongo";
+import * as mysqlX from './adapters/mysql-x';
 import { MongoClientOptions, Db, MongoClient, ObjectId } from "mongodb";
 import { VaultCollection } from "./collection";
-
 export enum RelationMode {
 	id,
 	record
@@ -16,13 +16,25 @@ export interface DatabaseConfiguration {
 	host:string
 	port:number
 	database:string
+	user?:string
+	password?:string
+	ssl?:boolean
 }
 export function CollectionOfType(Model:typeof mongo.VaultModel, collectionName?: string) {
 	return function (target: any, key: string) {
-	  Object.defineProperty(target, key, {
-		configurable: false,
-		value: new VaultCollection<mongo.VaultModel>(Model, collectionName)
-	  });
+		console.log(key, 'create function');
+		Object.defineProperty(target, key, {
+			configurable: true,
+			writable: true,
+			value: (driver:DatabaseDriver) => {
+				switch(driver) {
+					case DatabaseDriver.mysqlX:
+						return new mysqlX.MySqlXCollection<any>(Model, collectionName);
+					case DatabaseDriver.mongo:
+						return new VaultCollection<mongo.VaultModel>(Model, collectionName)
+				}
+			}
+		});
 	}
 }
 export class VaultORM {
@@ -31,20 +43,30 @@ export class VaultORM {
 	ready():Promise<any>{return Promise.resolve(false);}
 	constructor(configuration: DatabaseConfiguration, options?:MongoClientOptions) {
 		let ready:Promise<any> = Promise.resolve(false);
+		let DBBuilder:any;
 		switch(configuration.driver) {
 			case DatabaseDriver.mongo:
 				ready = mongo.connect(configuration, options);
+				break;
+			case DatabaseDriver.mysqlX:
+				DBBuilder = new mysqlX.DataBase(this, configuration);
+				ready = DBBuilder.ready();
 				break;
 		}
 		ready = new Promise( async resolve => {
 			this.database = await ready;
 			let collections = [];
-			let properties = Object.getOwnPropertyNames(Object.getPrototypeOf(this));
+			let properties = Object.getOwnPropertyNames(Object.getPrototypeOf(this)).filter(p=>p!=='constructor');
 			let BaseClasses = {};
 			for(const property of properties) {
+				this[property] = this[property](configuration.driver);
 				if(this[property] instanceof VaultCollection) {
 					BaseClasses[this[property].BaseClass.name] = this[property].BaseClass;
-					collections.push(this.register(this.database, this[property]));
+					if( DBBuilder) {
+						collections.push(DBBuilder.register(this[property]));
+					} else {
+						collections.push(this.register(this.database, this[property]));
+					}
 				}
 			}
 			for(const property of properties) {

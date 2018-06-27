@@ -6,11 +6,11 @@ import { RelationShipMode, RelationSingle, HasManyRelation } from "./related";
 
 export class VaultCollection<T extends VaultModel> {
 	collectionName?: string
-	private collection: Collection<T>
-	private BaseClass: any
-	private cursor: Cursor<T>
-	private __where__: FilterQuery<T> = {}
-	private __projection__: Object = {}
+	protected collection: Collection<T>
+	protected BaseClass: any
+	protected cursor: Cursor<T>
+	protected __where__: FilterQuery<T> = {}
+	protected __projection__: Object = {}
 	constructor(classname: typeof VaultModel, colname?: string) {
 		this.collectionName = colname || classname.collectionName;
 		if (!this.collectionName) {
@@ -68,7 +68,7 @@ export class VaultCollection<T extends VaultModel> {
 		this.__projection__ = query;
 		return this;
 	}
-	private toArray(cursor: Cursor<T>) {
+	protected toArray(cursor: Cursor<T>) {
 		if (this.__projection__) {
 			cursor.project(this.__projection__);
 			this.__projection__ = undefined;
@@ -182,7 +182,7 @@ export class VaultCollection<T extends VaultModel> {
 		this.__where__ = {};
 		return execution_cursor.explain();
 	}
-	private execute(query: any) {
+	protected execute(query: any) {
 		if (this.cursor) {
 			this.cursor = this.cursor.filter(query);
 		} else {
