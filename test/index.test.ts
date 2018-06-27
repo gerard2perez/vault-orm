@@ -36,6 +36,22 @@ describe('Mongo Adapter', () =>{
 		}
 		expect(await TestContext.rols.findAll(), 'Check length').to.have.lengthOf(20);
 	});
+	it('CRUD operations', async () => {
+		let rol = new Rol({name:'rol1'});
+		await rol.save();
+		expect(rol).to.have.property('rdn').undefined;
+		rol.rdn = 10;
+		expect(await TestContext.rols.firstOrDefault({rdn: 10}), 'Update not yet persist').to.be.undefined;
+		await rol.save();
+		expect(await TestContext.rols.firstOrDefault({rdn: 10}), 'update persist').to.have.property('name').eq('rol1');
+		expect(await rol.delete()).equals(true);
+		expect(await TestContext.rols.firstOrDefault({rdn: 10}), 'record removed').to.be.undefined;
+
+		expect(await new Rol({name:'r21'}).save()).eq(true);
+		await TestContext.rols.remove({name: 'r21'});
+		expect(await TestContext.rols.count()).eq(20);
+
+	});
 	it('Query Engine', async () => {
 		expect(await TestContext.rols.where({name:'r20'}).find(), 'Check length').to.have.lengthOf(1);
 		expect(await TestContext.rols.where({rdn:3}).find(), 'Check length').to.have.lengthOf.above(1);
@@ -70,22 +86,6 @@ describe('Mongo Adapter', () =>{
 		expect(await TestContext.rols.firstOrDefault(rol.id)).to.have.property('id');
 		expect(await TestContext.rols.firstOrDefault(rol.id.toHexString())).to.have.property('id');
 		expect(await TestContext.rols.firstOrDefault({name:'r20'})).to.have.property('name').eq('r20');
-
-	});
-	it('CRUD operations', async () => {
-		let rol = new Rol({name:'rol1'});
-		await rol.save();
-		expect(rol).to.have.property('rdn').undefined;
-		rol.rdn = 10;
-		expect(await TestContext.rols.firstOrDefault({rdn: 10}), 'Update not yet persist').to.be.undefined;
-		await rol.save();
-		expect(await TestContext.rols.firstOrDefault({rdn: 10}), 'update persist').to.have.property('name').eq('rol1');
-		expect(await rol.delete()).equals(true);
-		expect(await TestContext.rols.firstOrDefault({rdn: 10}), 'record removed').to.be.undefined;
-
-		expect(await new Rol({name:'r21'}).save()).eq(true);
-		await TestContext.rols.remove({name: 'r21'});
-		expect(await TestContext.rols.count()).eq(20);
 
 	});
 	describe('Relations', () => {
