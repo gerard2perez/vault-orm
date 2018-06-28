@@ -7,3 +7,5 @@ tmp
 *.tgz
 **/*.d.ts
 resolvenextversion.js
+coverage
+.nyc_output

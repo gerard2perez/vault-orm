@@ -4,6 +4,8 @@ import { VaultCollection } from '../collection';
 import { VaultModel, IVaultModel } from '../model';
 import { Database } from '../database';
 import { UUID, uuid } from './uuid';
+import { resolve } from 'dns';
+import { isNumber, isBoolean } from 'util';
 interface Result {
 	getAffectedItemsCount(): number
 	getAffectedRowsCount(): number
@@ -13,7 +15,7 @@ interface Result {
 	getWarningsCount(): number
 }
 function inspectResult(res) {
-	for(const key of Object.keys(res)) {
+	for (const key of Object.keys(res)) {
 		console.log(key, res[key]());
 	}
 	return Promise.resolve(res);
@@ -31,7 +33,6 @@ interface MysqlXCollection<T> {
 	removeOne(id: uuid): Promise<Result>
 	replaceOne(id: uuid, data: Partial<T>): Promise<Result>
 }
-
 export class DataBase implements Database<any> {
 	database: any
 	ready: Promise<any>
@@ -63,34 +64,134 @@ export class DataBase implements Database<any> {
 		});
 	}
 }
-
 function toQuery(obj: any = {}) {
-	let { $and = [], $or = [] } = obj;
-	let query = [
-		$and.map($a => {
-			let pre = [];
-			for (const key of Object.keys($a)) {
-				switch (typeof $a[key]) {
-					case 'string':
-						pre.push(`${key} = '${$a[key]}'`);
-						break;
-					default:
-						pre.push(`${key} = ${$a[key]}`);
-						break;
+	let {
+		$and,
+		$or,
+		$eq,
+		$gt,
+		$gte,
+		$in,
+		$lt,
+		$lte,
+		$ne,
+		$nin,
+		$not,
+		$expr,
+		$jsonSchema,
+		$mod,
+		$regex,
+		$options,
+		$text,
+		$geoIntersects,
+		$geoWithin,
+		$near,
+		$nearSphere,
+		$elemMatch,
+		$size,
+		$bitsAllClear,
+		$bitsAllSet,
+		$bitsAnyClear,
+		$bitsAnySet
+	} = obj;
+	let query: string[] = [];
+	if ($or) {
+		for (const $or_def of $or) {
+			// @ts-ignore
+			let trans = toQuery($or_def).join(' AND ');
+			query.push(trans);
+		}
+		if(query.length > 1) {
+			return '(' + query.join(') or (') + ')';
+		} else {
+			return query.join(' OR ');
+		}
+		delete obj.$or;
+	} else if ($and) {
+		let pre = [];
+		for (const $and_def of $and) {
+			let trans = toQuery($and_def);
+			if($and_def.$or)pre.push('__OR__');
+			pre = pre.concat(trans);
+		}
+		delete obj.$and;
+		query.push(`( ${pre.join(' AND ')} )`.replace('AND __OR__ AND', ') OR ('));
+		return query;
+	}
+	if($ne) {
+		if ( isNumber($ne) || isBoolean($ne) ) {
+			query.push(`!= ${$ne}`);
+		} else {
+			query.push(`!= '${$ne}'`);
+		}
+		delete obj.$ne;
+	}
+	if($eq) {
+		if ( isNumber($eq) || isBoolean($eq) ) {
+			query.push(`= ${$eq}`);
+		} else {
+			query.push(`= '${$eq}'`);
+		}
+		delete obj.$eq;
+	}
+	if($regex) {
+		delete obj.$regex;
+		query.push(`REGEXP_LIKE($property$, '${$regex.toString().replace(/\//g, '')}')`);
+	}
+	if($in) {
+		delete obj.$in;
+		query.push(`IN ('${$in.join("', '")}')`);
+	}
+	if($nin) {
+		delete obj.$nin;
+		query.push(`NOT IN ('${$nin.join("', '")}')`);
+	}
+	if ( isNumber($gte)) {
+		delete obj.$gte;
+		query.push(`>= ${$gte}`);
+	}
+	if ( isNumber($lte)) {
+		delete obj.$lte;
+		query.push(`<= ${$lte}`);
+	}
+	if ( isNumber($gt)) {
+		delete obj.$gt;
+		query.push(`> ${$gt}`);
+	}
+	if ( isNumber($lt)) {
+		delete obj.$lt;
+		query.push(`< ${$lt}`);
+	}
+	if(obj instanceof Object) {
+		for(const key of Object.keys(obj)) {
+			if( isNumber(obj[key].$gte) && isNumber(obj[key].$lte)) {
+				query.push(`${key} BETWEEN ${obj[key].$gte} AND ${obj[key].$lte}`);
+				delete obj[key].$lte;
+				delete obj[key].$gte;
+			}
+			// @ts-ignore
+			query.push(toQuery(obj[key]).map(q => {
+				if(q.includes('$property$')) {
+					return q.replace('$property$', key);
+				} else {
+					return `${key} ${q}`;
 				}
-			}
-			return `(${pre.join(' and ')})`;
-		}).join(' and '),
-		$or.map($o => {
-			let pre = [];
-			for (const key of Object.keys($o)) {
-				pre.push(`${key} = '${$o[key]}'`);
-			}
-			return `(${pre.join(' and ')})`;
-		}).join(' or '),
-	].filter(f => f);
-	let res = query.join(' or ') || 'true';
-	return res === '()' ? 'true' : res;
+			}).join(' and '));
+		}
+	} else {
+		if(isNumber(obj) || isBoolean(obj)) {
+			query.push(`= ${obj}`);
+		} else {
+			query.push(`= '${obj}'`);
+		}
+	}
+	return query.filter(f=>f);
+}
+function toSQLQuery (obj:any = {}):string {
+	let res = toQuery(obj);
+	let final = (res instanceof Array ? res[0] : res);
+	final = (final || '').replace('(  )', '') || 'true';
+	return final;
 }
 export class Model extends VaultModel {
 	protected async persist(connection: MysqlXCollection<Model>, update_object: any) {
@@ -127,8 +228,8 @@ export class MySqlXCollection<T extends VaultModel> extends VaultCollection<T> {
 	protected collection: MysqlXCollection<T>
 	// @ts-ignore
 	protected __where__: any
-	protected __limit__: number
-	protected __skip__: number
+	protected __limit__: number = 0
+	protected __skip__: number = 0
 	where(query: Partial<T> = {}) {
 		this.__where__['$and'] = this.__where__['$and'] || [];
 		this.__where__['$and'].push(query);
@@ -146,29 +247,6 @@ export class MySqlXCollection<T extends VaultModel> extends VaultCollection<T> {
 	// public fields(query: object) {
 	// 	this.__projection__ = query;
 	// 	return this;
-	// }
-	// private toArray(cursor: Cursor<T>) {
-	// 	if (this.__projection__) {
-	// 		cursor.project(this.__projection__);
-	// 		this.__projection__ = undefined;
-	// 	}
-	// 	let rdn = Math.floor(Math.random() * 1000);
-	// 	let id = `toArray${rdn}`;
-	// 	let results: T[] = [];
-	// 	return new Promise(async (resolve, reject) => {
-	// 		let item = await cursor.next();
-	// 		while (item) {
-	// 			let created = Reflect.construct(this.BaseClass, [item]) as T;
-	// 			// // @ts-ignore
-	// 			// await created.loadRelation();
-	// 			results.push(created);
-	// 			item = await cursor.next();
-	// 		}
-	// 		resolve(results);
-	// 	}) as Promise<T[]>;
-	// }
-	// async remove(query: Partial<T>) {
-	// 	return (await this.collection.remove(query)).result;
 	// }
 	// async update(query: Partial<T>, keys?: Object) {
 	// 	return (await this.collection.update(query, keys)).result;
@@ -188,23 +266,28 @@ export class MySqlXCollection<T extends VaultModel> extends VaultCollection<T> {
 	// }
 	protected toArray(cursor: any): Promise<T[]> {
 		let results: T[] = [];
+		console.log('start');
 		return new Promise(resolve => {
 			cursor.execute(doc => {
 				let created = Reflect.construct(this.BaseClass, [doc]) as T;
 				results.push(created);
 			}).then(() => {
 				this.__where__ = {};
-				this.__limit__ = undefined;
-				this.__skip__ = undefined;
+				this.__limit__ = 0;
+				this.__skip__ = 0;
 				this.__projection__ = {};
+				console.log('end');
 				resolve(results);
+			}).catch(err => {
+				console.log(cursor.getCriteria());
+				resolve([]);
 			});
 		});
 	}
 	remove(query: Partial<T>) {
 		this.where(query);
 		// @ts-ignore
-		return this.collection.remove(toQuery(this.__where__)).execute().then(res=>res.getAffectedRowsCount() === 1);
+		return this.collection.remove(toSQLQuery(this.__where__)).execute().then(res => res.getAffectedRowsCount() === 1);
 	}
 	findAll() {
 		return this.toArray(this.collection.find());
@@ -220,74 +303,39 @@ export class MySqlXCollection<T extends VaultModel> extends VaultCollection<T> {
 	firstOrDefault(Id: uuid): Promise<T>
 	firstOrDefault(query: Partial<T>): Promise<T>
 	firstOrDefault(queryOrId?: any) {
-		// if (!this.cursor) this.cursor = this.collection.find();
 		if (typeof (queryOrId) === 'string' && queryOrId.length === 32) queryOrId = { _id: queryOrId };
 		if (queryOrId && typeof (queryOrId) === 'object') {
 			this.where(queryOrId);
-			// this.cursor.find(this.__where__);
 		}
 		this.__limit__ = 1;
-		// this.cursor.limit(1);
-		return this.execute(this.__where__).then(results => results[0]);
+		return this.execute().then(results => results[0]);
 	}
-	protected execute(where: any) {
-		return this.toArray(this.collection.find(toQuery(this.__where__)).limit(this.__limit__));
+	protected execute() {
+		let query = toSQLQuery(this.__where__);
+		let find = this.collection.find(query);
+		find = find.limit(this.__limit__, this.__skip__);
+		return this.toArray(find);
 	}
-	// limit(n: number) {
-	// 	if (!this.cursor) this.cursor = this.collection.find<T>();
-	// 	this.cursor = this.cursor.limit(n);
-	// 	return this;
-	// }
-	// /**
-	//  * @alias take
-	//  * @param n
-	//  */
-	// take(n: number) {
-	// 	return this.limit(n);
-	// }
-	// skip(n: number) {
-	// 	if (!this.cursor) this.cursor = this.collection.find<T>();
-	// 	this.cursor = this.cursor.skip(n);
-	// 	return this;
-	// }
-	// findOne(): Promise<T>
-	// findOne(Id: uuid): Promise<T>
-	// /**
-	//  * String that respresnents an uuid
-	//  */
-	// find() {
-	// 	return this.execute(this.__where__);
-	// }
-	// explain() {
-	// 	this.cursor = this.collection.find<T>(this.__where__);
-	// 	const execution_cursor = this.cursor;
-	// 	this.cursor = null;
-	// 	this.__where__ = {};
-	// 	return execution_cursor.explain();
-	// }
-	// private execute(query: any) {
-	// 	if (this.cursor) {
-	// 		this.cursor = this.cursor.filter(query);
-	// 	} else {
-	// 		this.cursor = this.collection.find<T>(this.__where__);
-	// 	}
-	// 	const execution_cursor = this.cursor;
-	// 	this.cursor = null;
-	// 	this.__where__ = {};
-	// 	return this.toArray(execution_cursor);
-	// }
+	limit(n: number) {
+		this.__limit__ = n;
+		return this;
+	}
+	skip(n: number) {
+		this.__skip__ = n;
+		return this;
+	}
+	find() {
+		return this.execute();
+	}
 	count(applySkipLimit: boolean = false) {
-		let find = this.collection.find();
-		if(applySkipLimit) {
-			if(this.__limit__) {
-				find = find.limit(this.__limit__, this.__skip__);
-			}
+		let find = this.collection.find(toSQLQuery(this.__where__));
+		if (applySkipLimit) {
+			find = find.limit(this.__limit__, this.__skip__);
 		}
-		this.__limit__ = undefined;
-		this.__skip__ = undefined;
+		this.__skip__ = 0;
 		this.__where__ = {};
-		this.__projection__ = undefined;
-		this.__limit__ = undefined;
+		this.__projection__ = {};
+		this.__limit__ = 0;
 		let count = () => {
 			// @ts-ignore
 			count.count++;
@@ -295,17 +343,6 @@ export class MySqlXCollection<T extends VaultModel> extends VaultCollection<T> {
 		// @ts-ignore
 		count.count = 0;
 		// @ts-ignore
-		return find.execute(count).then(()=>count.count);
-		// let count: Promise<number>;
-		// if (this.cursor) {
-		// 	count = this.cursor.filter(this.__where__).count(applySkipLimit);
-		// } else {
-		// 	count = this.collection.find(this.__where__).count(applySkipLimit);
-		// }
-		// return count.finally(() => {
-		// 	this.cursor = null;
-		// 	this.__where__ = {};
-		// });
-
+		return find.execute(count).then(() => count.count);
 	}
 }

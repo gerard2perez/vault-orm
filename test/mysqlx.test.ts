@@ -81,12 +81,10 @@ describe('MySQl XDevAPI Adapter', () => {
 		let rol = await TestContext.rols.findOne();
 		expect(rol).to.have.property('id');
 		expect(await TestContext.rols.findOne(rol.id)).to.have.property('id');
-		expect(await TestContext.rols.findOne(rol.id.toHexString())).to.have.property('id');
 		expect(await TestContext.rols.findOne({name:'r20'})).to.have.property('name').eq('r20');
 
 		expect(await TestContext.rols.firstOrDefault()).to.have.property('id');
 		expect(await TestContext.rols.firstOrDefault(rol.id)).to.have.property('id');
-		expect(await TestContext.rols.firstOrDefault(rol.id.toHexString())).to.have.property('id');
 		expect(await TestContext.rols.firstOrDefault({name:'r20'})).to.have.property('name').eq('r20');
 
 	});
