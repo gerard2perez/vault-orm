@@ -1,7 +1,7 @@
 import { RelationSingle } from "./related";
 import { VaultORM, RelationMode, DatabaseConfiguration } from "./";
 import { inspect } from 'util';
-import { MongoClientOptions, Db, Collection, MongoClient, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
 export interface IVaultField<T> {
 	kind: any
 	defaults?: T
@@ -116,7 +116,6 @@ export abstract class VaultModel extends IVaultModel {
 		let { mask, raw, own, relations } = Object.getPrototypeOf(this).newSchema;
 		if (!this.updated) this.created = new Date();
 		this.updated = new Date();
-		// let collection = (Object.getPrototypeOf(this).collection() as Collection);
 		let update_object = {};
 		for (const key of Object.keys(raw)) {
 			if (key === '_id') continue;
@@ -126,24 +125,6 @@ export abstract class VaultModel extends IVaultModel {
 		}
 		let hooks = VaultModel.storage.get(this).save_hooks.map(h => h());
 		let result = this.persist(Object.getPrototypeOf(this).collection(), update_object);
-		// Promise.resolve(false);
-		// if (!this.id) {
-		// 	result = collection.insertOne(update_object).then((inserted) => {
-		// 		//@ts-ignore
-		// 		this._id = inserted.insertedId;
-		// 		return true;
-		// 	});
-		// } else {
-		// 	result = collection.findOneAndUpdate({ _id: this.id }, update_object).then(error => {
-		// 		if (!error.lastErrorObject.updatedExisting) {
-		// 			console.log(error, { _id: this.id }, update_object);
-		// 			throw new Error(error.lastErrorObject);
-		// 		}
-		// 		return true;
-		// 	});
-		// }
-		// console.log('-----------');
-		// console.log(hooks);
 		return Promise.all([result, ...hooks]).then(r => {
 			VaultModel.storage.get(this).save_hooks = [];
 			if(r[0])
@@ -155,15 +136,6 @@ export abstract class VaultModel extends IVaultModel {
 		return this.destroy(Object.getPrototypeOf(this).collection()).then(success => {
 			if(success)this._id = null;
 			return success;
-		}).catch(res => { throw new Error(JSON.stringify(res, null, 2)); });
-		// return collection.deleteOne({ _id: this._id }).then(result => {
-		// 	if (result.deletedCount === 1) {
-		// 		//@ts-ignore
-		// 		this._id = null;
-		// 		return true;
-		// 	} else {
-		// 		throw new Error(JSON.stringify(result, null, 2));
-		// 	}
-		// });
+		}).catch(res => { throw new Error(JSON.stringify(res, null, 2)); });;
 	}
 }

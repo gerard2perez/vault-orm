@@ -4,6 +4,14 @@ import { MongoClientOptions, Db, MongoClient, ObjectId } from "mongodb";
 import { VaultCollection } from "./collection";
 import { VaultModel } from "./model";
 import { Database } from "./database";
+
+export class NotInmplemented extends Error {
+	constructor(msg:string = 'This method is not yet implemented.', ...args) {
+		super(...[msg, ...args]);
+		this.name = 'NotImplemented';
+        Error.captureStackTrace(this, NotInmplemented);
+    }
+}
 export enum RelationMode {
 	id,
 	record
@@ -24,7 +32,6 @@ export interface DatabaseConfiguration {
 }
 export function CollectionOfType(Model:typeof VaultModel, collectionName?: string) {
 	return function (target: any, key: string) {
-		console.log(key, 'create function');
 		Object.defineProperty(target, key, {
 			configurable: true,
 			writable: true,
@@ -33,7 +40,7 @@ export function CollectionOfType(Model:typeof VaultModel, collectionName?: strin
 					case DatabaseDriver.mysqlX:
 						return new mysqlX.MySqlXCollection<mysqlX.Model>(Model, collectionName);
 					case DatabaseDriver.mongo:
-						return new VaultCollection<mongo.Model>(Model, collectionName)
+						return new mongo.MongoCollection<mongo.Model>(Model, collectionName)
 				}
 			}
 		});

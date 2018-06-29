@@ -164,6 +164,7 @@ function toQuery(obj: any = {}) {
 	}
 	if(obj instanceof Object) {
 		for(const key of Object.keys(obj)) {
+			if(!obj[key])continue;
 			if( isNumber(obj[key].$gte) && isNumber(obj[key].$lte)) {
 				query.push(`${key} BETWEEN ${obj[key].$gte} AND ${obj[key].$lte}`);
 				delete obj[key].$lte;
@@ -251,22 +252,19 @@ export class MySqlXCollection<T extends VaultModel> extends VaultCollection<T> {
 	// async update(query: Partial<T>, keys?: Object) {
 	// 	return (await this.collection.update(query, keys)).result;
 	// }
-	// async findOrCreate(query: Partial<T>, keys: Object={}) {
-	// 	let item = await this.collection.findOne(query);
-	// 	if (!item) {
-	// 		for (const key of Object.keys(keys)) {
-	// 			query[key] = keys[key];
-	// 		}
-	// 		item = Reflect.construct(this.BaseClass, [query]) as T;
-	// 		await item.save();
-	// 	} else {
-	// 		item = Reflect.construct(this.BaseClass, [item]);
-	// 	}
-	// 	return item;
-	// }
+	async findOrCreate(query: Partial<T>, keys: Object={}) {
+		let item = await this.firstOrDefault((toSQLQuery(query)));
+		if (!item) {
+			for (const key of Object.keys(keys)) {
+				query[key] = keys[key];
+			}
+			item = Reflect.construct(this.BaseClass, [query]) as T;
+			await item.save();
+		}
+		return item;
+	}
 	protected toArray(cursor: any): Promise<T[]> {
 		let results: T[] = [];
-		console.log('start');
 		return new Promise(resolve => {
 			cursor.execute(doc => {
 				let created = Reflect.construct(this.BaseClass, [doc]) as T;
@@ -276,10 +274,8 @@ export class MySqlXCollection<T extends VaultModel> extends VaultCollection<T> {
 				this.__limit__ = 0;
 				this.__skip__ = 0;
 				this.__projection__ = {};
-				console.log('end');
 				resolve(results);
 			}).catch(err => {
-				console.log(cursor.getCriteria());
 				resolve([]);
 			});
 		});

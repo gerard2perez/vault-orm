@@ -3,6 +3,7 @@ import { VaultModel } from "./model";
 import * as inflector from 'inflection';
 import debug from "./debug";
 import { RelationShipMode, RelationSingle, HasManyRelation } from "./related";
+import { NotInmplemented } from ".";
 
 export class VaultCollection<T extends VaultModel> {
 	collectionName?: string
@@ -64,70 +65,32 @@ export class VaultCollection<T extends VaultModel> {
 			}
 		}
 	}
-	public fields(query: object) {
-		this.__projection__ = query;
-		return this;
+	fields(query: object) : this {
+		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
-	protected toArray(cursor: Cursor<T>) {
-		if (this.__projection__) {
-			cursor.project(this.__projection__);
-			this.__projection__ = undefined;
-		}
-		let rdn = Math.floor(Math.random() * 1000);
-		let id = `toArray${rdn}`;
-		let results: T[] = [];
-		return new Promise(async (resolve, reject) => {
-			let item = await cursor.next();
-			while (item) {
-				let created = Reflect.construct(this.BaseClass, [item]) as T;
-				// // @ts-ignore
-				// await created.loadRelation();
-				results.push(created);
-				item = await cursor.next();
-			}
-			resolve(results);
-		}) as Promise<T[]>;
+	protected toArray(cursor: Cursor<T>): Promise<T[]> {
+		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
-	async remove(query: FilterQuery<T>) {
-		return (await this.collection.remove(query)).result;
+	remove(query: FilterQuery<T>): Promise<any> {
+		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
-	async update(query: FilterQuery<T>, keys?: Object) {
-		return (await this.collection.update(query, keys)).result;
+	update(query: FilterQuery<T>, keys?: Object):Promise<any> {
+		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
-	async findOrCreate(query: FilterQuery<T>, keys: Object = {}) {
-		let item = await this.collection.findOne(query);
-		if (!item) {
-			for (const key of Object.keys(keys)) {
-				query[key] = keys[key];
-			}
-			item = Reflect.construct(this.BaseClass, [query]) as T;
-			await item.save();
-		} else {
-			item = Reflect.construct(this.BaseClass, [item]);
-		}
-		return item;
+	 findOrCreate(query: FilterQuery<T>, keys: Object = {}):Promise<T> {
+		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
-	findAll() {
-		return this.toArray(this.collection.find<T>({}));
+	findAll() : Promise<T[]> {
+		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
-	where(query: FilterQuery<T> = {}) {
-		this.__where__['$and'] = this.__where__['$and'] || [];
-		this.__where__['$and'].push(query);
-		return this;
+	where(query: FilterQuery<T> = {}): this {
+		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
-	orWhere(query: FilterQuery<T>) {
-		this.__where__['$or'] = this.__where__['$or'] || [];
-		this.__where__['$or'].push(query);
-		if (this.__where__['$and']) {
-			this.__where__['$or'].push({ '$and': this.__where__['$and'] });
-			delete this.__where__['$and'];
-		}
-		return this;
+	orWhere(query: FilterQuery<T>): this {
+		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
-	limit(n: number) {
-		if (!this.cursor) this.cursor = this.collection.find<T>();
-		this.cursor = this.cursor.limit(n);
-		return this;
+	limit(n: number) : this {
+		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
 	/**
 	 * @alias take
@@ -136,10 +99,8 @@ export class VaultCollection<T extends VaultModel> {
 	take(n: number) {
 		return this.limit(n);
 	}
-	skip(n: number) {
-		if (!this.cursor) this.cursor = this.collection.find<T>();
-		this.cursor = this.cursor.skip(n);
-		return this;
+	skip(n: number): this {
+		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
 	findOne(): Promise<T>
 	findOne(Id: ObjectId): Promise<T>
@@ -149,8 +110,8 @@ export class VaultCollection<T extends VaultModel> {
 	findOne(StringId: string): Promise<T>
 	findOne(query: FilterQuery<T>): Promise<T>
 	/**@alias firstOrDefault */
-	findOne(queryOrId?: any) {
-		return this.firstOrDefault(queryOrId);
+	findOne(queryOrId?: any):Promise<T> {
+		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
 	firstOrDefault(): Promise<T>
 	firstOrDefault(Id: ObjectId): Promise<T>
@@ -159,51 +120,19 @@ export class VaultCollection<T extends VaultModel> {
 	 */
 	firstOrDefault(StringId: string): Promise<T>
 	firstOrDefault(query: FilterQuery<T>): Promise<T>
-	firstOrDefault(queryOrId?: any) {
-		if (!this.cursor) this.cursor = this.collection.find<T>();
-		if (typeof (queryOrId) === 'string' && queryOrId.length === 24) queryOrId = new ObjectId(queryOrId);
-		if (queryOrId instanceof ObjectId) {
-			queryOrId = { _id: queryOrId }
-		}
-		if (queryOrId && typeof (queryOrId) === 'object') {
-			this.where(queryOrId);
-			this.cursor.filter(this.__where__);
-		}
-		this.cursor.limit(1);
-		return this.execute(this.__where__).then(results => results[0]);
+	firstOrDefault(queryOrId?: any) : Promise<T> {
+		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
-	find() {
-		return this.execute(this.__where__);
+	find() : Promise<T[]> {
+		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
-	explain() {
-		this.cursor = this.collection.find<T>(this.__where__);
-		const execution_cursor = this.cursor;
-		this.cursor = null;
-		this.__where__ = {};
-		return execution_cursor.explain();
+	explain():Promise<any> {
+		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
-	protected execute(query: any) {
-		if (this.cursor) {
-			this.cursor = this.cursor.filter(query);
-		} else {
-			this.cursor = this.collection.find<T>(this.__where__);
-		}
-		const execution_cursor = this.cursor;
-		this.cursor = null;
-		this.__where__ = {};
-		return this.toArray(execution_cursor);
+	protected execute(query: any):Promise<T[]> {
+		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
-	count(applySkipLimit: boolean = false) {
-		let count: Promise<number>;
-		if (this.cursor) {
-			count = this.cursor.filter(this.__where__).count(applySkipLimit);
-		} else {
-			count = this.collection.find(this.__where__).count(applySkipLimit);
-		}
-		return count.finally(() => {
-			this.cursor = null;
-			this.__where__ = {};
-		});
-
+	count(applySkipLimit: boolean = false): Promise<number> {
+		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
 }

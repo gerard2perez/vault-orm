@@ -1,7 +1,6 @@
 import { RelationSingle } from "../related";
 import { VaultORM, RelationMode, DatabaseConfiguration } from "../";
-import { inspect } from 'util';
-import { MongoClientOptions, Db, Collection, MongoClient, ObjectId } from "mongodb";
+import { MongoClientOptions, Db, Collection, MongoClient, ObjectId, FilterQuery, Cursor } from "mongodb";
 import { VaultCollection } from "../collection";
 import { Database } from "../database";
 import { VaultModel, IVaultModel } from "../model";
@@ -66,5 +65,149 @@ export class Model extends VaultModel {
 	}
 	protected async destroy(connection: any) {
 		return connection.deleteOne({ _id: this._id }).then(result => result.deletedCount === 1);
+	}
+}
+export class MongoCollection<T extends VaultModel> extends VaultCollection<T> {
+	fields(query: object) {
+		this.__projection__ = query;
+		return this;
+	}
+	protected toArray(cursor: Cursor<T>) {
+		if (this.__projection__) {
+			cursor.project(this.__projection__);
+			this.__projection__ = undefined;
+		}
+		let rdn = Math.floor(Math.random() * 1000);
+		let id = `toArray${rdn}`;
+		let results: T[] = [];
+		return new Promise(async (resolve, reject) => {
+			let item = await cursor.next();
+			while (item) {
+				let created = Reflect.construct(this.BaseClass, [item]) as T;
+				// // @ts-ignore
+				// await created.loadRelation();
+				results.push(created);
+				item = await cursor.next();
+			}
+			resolve(results);
+		}) as Promise<T[]>;
+	}
+	async remove(query: FilterQuery<T>) {
+		return (await this.collection.remove(query)).result;
+	}
+	async update(query: FilterQuery<T>, keys?: Object) {
+		return (await this.collection.update(query, keys)).result;
+	}
+	async findOrCreate(query: FilterQuery<T>, keys: Object = {}) {
+		let item = await this.collection.findOne(query);
+		if (!item) {
+			for (const key of Object.keys(keys)) {
+				query[key] = keys[key];
+			}
+			item = Reflect.construct(this.BaseClass, [query]) as T;
+			await item.save();
+		} else {
+			item = Reflect.construct(this.BaseClass, [item]);
+		}
+		return item;
+	}
+	findAll() {
+		return this.toArray(this.collection.find<T>({}));
+	}
+	where(query: FilterQuery<T> = {}) {
+		this.__where__['$and'] = this.__where__['$and'] || [];
+		this.__where__['$and'].push(query);
+		return this;
+	}
+	orWhere(query: FilterQuery<T>) {
+		this.__where__['$or'] = this.__where__['$or'] || [];
+		this.__where__['$or'].push(query);
+		if (this.__where__['$and']) {
+			this.__where__['$or'].push({ '$and': this.__where__['$and'] });
+			delete this.__where__['$and'];
+		}
+		return this;
+	}
+	limit(n: number) {
+		if (!this.cursor) this.cursor = this.collection.find<T>();
+		this.cursor = this.cursor.limit(n);
+		return this;
+	}
+	/**
+	 * @alias take
+	 * @param n
+	 */
+	take(n: number) {
+		return this.limit(n);
+	}
+	skip(n: number) {
+		if (!this.cursor) this.cursor = this.collection.find<T>();
+		this.cursor = this.cursor.skip(n);
+		return this;
+	}
+	findOne(): Promise<T>
+	findOne(Id: ObjectId): Promise<T>
+	/**
+	 * String that respresnents an ObjectId
+	 */
+	findOne(StringId: string): Promise<T>
+	findOne(query: FilterQuery<T>): Promise<T>
+	/**@alias firstOrDefault */
+	findOne(queryOrId?: any) {
+		return this.firstOrDefault(queryOrId);
+	}
+	firstOrDefault(): Promise<T>
+	firstOrDefault(Id: ObjectId): Promise<T>
+	/**
+	 * String that respresnents an ObjectId
+	 */
+	firstOrDefault(StringId: string): Promise<T>
+	firstOrDefault(query: FilterQuery<T>): Promise<T>
+	firstOrDefault(queryOrId?: any) {
+		if (!this.cursor) this.cursor = this.collection.find<T>();
+		if (typeof (queryOrId) === 'string' && queryOrId.length === 24) queryOrId = new ObjectId(queryOrId);
+		if (queryOrId instanceof ObjectId) {
+			queryOrId = { _id: queryOrId }
+		}
+		if (queryOrId && typeof (queryOrId) === 'object') {
+			this.where(queryOrId);
+			this.cursor.filter(this.__where__);
+		}
+		this.cursor.limit(1);
+		return this.execute(this.__where__).then(results => results[0]);
+	}
+	find() {
+		return this.execute(this.__where__);
+	}
+	explain() {
+		this.cursor = this.collection.find<T>(this.__where__);
+		const execution_cursor = this.cursor;
+		this.cursor = null;
+		this.__where__ = {};
+		return execution_cursor.explain();
+	}
+	protected execute(query: any) {
+		if (this.cursor) {
+			this.cursor = this.cursor.filter(query);
+		} else {
+			this.cursor = this.collection.find<T>(this.__where__);
+		}
+		const execution_cursor = this.cursor;
+		this.cursor = null;
+		this.__where__ = {};
+		return this.toArray(execution_cursor);
+	}
+	count(applySkipLimit: boolean = false) {
+		let count: Promise<number>;
+		if (this.cursor) {
+			count = this.cursor.filter(this.__where__).count(applySkipLimit);
+		} else {
+			count = this.collection.find(this.__where__).count(applySkipLimit);
+		}
+		return count.finally(() => {
+			this.cursor = null;
+			this.__where__ = {};
+		});
+
 	}
 }
