@@ -1,5 +1,4 @@
-import { VaultORM, CollectionOfType, RelationMode, DatabaseDriver } from '../../src';
-import { Collection } from '../../src/adapters/mongo';
+import { Collection, VaultORM, CollectionOfType, RelationMode, DatabaseDriver } from '../../src/adapters/mongo';
 import { Rigth } from './rigth';
 import { Rol } from './rol';
 import { User } from './user';

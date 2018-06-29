@@ -1,10 +1,8 @@
-import { VaultORM, CollectionOfType, RelationMode, DatabaseDriver } from '../../src';
-import { Collection } from '../../src/adapters/mysql-x';
+import { Collection, VaultORM, CollectionOfType, RelationMode, DatabaseDriver } from '../../src/adapters/mysql-x';
 import { Rigth } from './rigth';
 import { Rol } from './rol';
 import { User } from './user';
 import { Post } from './post';
-
 VaultORM.RelationsMode = RelationMode.id;
 class TestContext extends VaultORM {
 	// @ts-ignore

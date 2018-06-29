@@ -1,9 +1,9 @@
-import { RelationSingle } from "../related";
-import { VaultORM, RelationMode, DatabaseConfiguration } from "../";
+export { VaultORM, CollectionOfType, RelationMode, DatabaseDriver } from '../';
 import { MongoClientOptions, Db, Collection, MongoClient, ObjectId, FilterQuery, Cursor } from "mongodb";
 import { VaultCollection } from "../collection";
 import { Database } from "../database";
-import { VaultModel, IVaultModel } from "../model";
+import { VaultModel } from "../model";
+import { DatabaseConfiguration } from '..';
 export class DataBase implements Database<Db> {
 	database: Db
 	ready: Promise<Db>

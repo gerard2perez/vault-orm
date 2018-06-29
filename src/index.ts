@@ -1,5 +1,3 @@
-import * as mongo from "./adapters/mongo";
-import * as mysqlX from './adapters/mysql-x';
 import { MongoClientOptions } from "mongodb";
 import { VaultCollection } from "./collection";
 import { VaultModel } from "./model";
@@ -17,8 +15,8 @@ export enum RelationMode {
 	record
 }
 export enum DatabaseDriver {
-	mongo,
-	mysqlX
+	mongo = 'mongo',
+	mysqlX = 'mysql-x'
 }
 export interface DatabaseConfiguration {
 	driver:DatabaseDriver
@@ -35,12 +33,7 @@ export function CollectionOfType(Model:typeof VaultModel, collectionName?: strin
 			configurable: true,
 			writable: true,
 			value: (driver:DatabaseDriver) => {
-				switch(driver) {
-					case DatabaseDriver.mysqlX:
-						return new mysqlX.Collection<mysqlX.Model>(Model, collectionName);
-					case DatabaseDriver.mongo:
-						return new mongo.Collection<mongo.Model>(Model, collectionName)
-				}
+				return new (require(`./adapters/${driver.toString()}`)).Collection(Model, collectionName);
 			}
 		});
 	}
@@ -51,17 +44,8 @@ export class VaultORM {
 	private database: any
 	// @ts-ignore
 	ready():Promise<any>{return Promise.resolve(false);}
-	// constructor(kind:DatabaseDriver, configuration: DatabaseConfiguration, options?:MongoClientOptions) : VaultORM;// : {[p:string]:any}
-	constructor(configuration: DatabaseConfiguration, options?:MongoClientOptions) {
-		let DBBuilder:Database<any>;
-		switch(configuration.driver) {
-			case DatabaseDriver.mongo:
-				DBBuilder = new mongo.DataBase(this, configuration, options);
-				break;
-			case DatabaseDriver.mysqlX:
-				DBBuilder = new mysqlX.DataBase(this, configuration);
-				break;
-		}
+	constructor(configuration: DatabaseConfiguration, driver_options?:MongoClientOptions | any) {
+		let DBBuilder:Database<any> = new (require(`./adapters/${configuration.driver.toString()}`)).DataBase(this, configuration, driver_options) as Database<any>;
 		let ready:Promise<any> = new Promise( async resolve => {
 			this.database = await DBBuilder.ready;
 			let collections = [];

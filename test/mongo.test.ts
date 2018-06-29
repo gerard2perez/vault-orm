@@ -1,8 +1,8 @@
-import { TestContext } from './context';
-import { Rol } from './context/rol';
-import { expect } from 'chai';
 import { VaultModel } from '../src/model';
-import { Post } from './context/post';
+import { TestContext } from './mongo';
+import { Rol } from './mongo/rol';
+import { Post } from './mongo/post';
+import { expect } from 'chai';
 function rdn() {
 	return [3,5,1][Math.floor(Math.random()*3)];
 }

@@ -1,3 +1,4 @@
+export { VaultORM, CollectionOfType, RelationMode, DatabaseDriver } from '../index';
 import * as mysqlx from '@mysql/xdevapi';
 import { DatabaseConfiguration } from '..';
 import { VaultCollection } from '../collection';
