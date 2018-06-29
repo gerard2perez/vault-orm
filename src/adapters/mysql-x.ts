@@ -195,6 +195,11 @@ function toSQLQuery (obj:any = {}):string {
 	return final;
 }
 export class Model extends VaultModel {
+	constructor(model:any) {
+		if(model.created && !(model.created instanceof Date))model.created = new Date(model.created);
+		if(model.updated && !(model.updated instanceof Date))model.updated = new Date(model.updated);
+		super(model);
+	}
 	protected async persist(connection: MysqlXCollection<Model>, update_object: any) {
 		update_object.created = (update_object.created as Date).toUTCString();
 		update_object.updated = (update_object.updated as Date).toUTCString();
@@ -252,6 +257,20 @@ export class MySqlXCollection<T extends VaultModel> extends VaultCollection<T> {
 	// async update(query: Partial<T>, keys?: Object) {
 	// 	return (await this.collection.update(query, keys)).result;
 	// }
+	update(query: Partial<T>, update_object?: Object) {
+		let modify = this.collection.modify(toSQLQuery(query));
+		for (const key of Object.keys(update_object)) {
+			if(update_object[key]){
+				modify = modify.set(key, update_object[key]);
+			} else {
+				modify = modify.unset(key);
+			}
+		}
+		return modify.execute(console.log).then(res => {
+			if (res.getAffectedRowsCount() === 1) return true;
+			return false;
+		});
+	}
 	async findOrCreate(query: Partial<T>, keys: Object={}) {
 		let item = await this.firstOrDefault((toSQLQuery(query)));
 		if (!item) {
