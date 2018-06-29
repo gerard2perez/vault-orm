@@ -164,7 +164,7 @@ function toQuery(obj: any = {}) {
 	}
 	if(obj instanceof Object) {
 		for(const key of Object.keys(obj)) {
-			if(!obj[key])continue;
+			if(!obj[key]){ query.push(`${key} = ''`); continue; };
 			if( isNumber(obj[key].$gte) && isNumber(obj[key].$lte)) {
 				query.push(`${key} BETWEEN ${obj[key].$gte} AND ${obj[key].$lte}`);
 				delete obj[key].$lte;
@@ -208,7 +208,7 @@ export class Model extends VaultModel {
 			for (const key of Object.keys(update_object)) {
 				modify = modify.set(key, update_object[key]);
 			}
-			return modify.execute(console.log).then(res => {
+			return modify.execute().then(res => {
 				if (res.getAffectedRowsCount() === 1) return update_object._id;
 				return false;
 			});
@@ -266,7 +266,7 @@ export class MySqlXCollection<T extends VaultModel> extends VaultCollection<T> {
 				modify = modify.unset(key);
 			}
 		}
-		return modify.execute(console.log).then(res => {
+		return modify.execute().then(res => {
 			if (res.getAffectedRowsCount() === 1) return true;
 			return false;
 		});

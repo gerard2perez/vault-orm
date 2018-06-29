@@ -117,8 +117,8 @@ describe('MySQl XDevAPI Adapter', () => {
 		it('belongsTo', async () => {
 			let user = await TestContext.users.findOrCreate({name:'user1'});
 			let rol = await TestContext.rols.firstOrDefault();
-
-			expect(await rol.user()).to.equals(undefined);
+			console.log(rol.userId);
+			expect(await rol.user()).to.equals(undefined, 'relation bT is empty');
 			expect(VaultModel.storage.get(rol).save_hooks).to.have.lengthOf(0);
 			rol.user(user);
 			expect(VaultModel.storage.get(rol).save_hooks).to.have.lengthOf(0);
