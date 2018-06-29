@@ -37,18 +37,21 @@ export function CollectionOfType(Model:typeof VaultModel, collectionName?: strin
 			value: (driver:DatabaseDriver) => {
 				switch(driver) {
 					case DatabaseDriver.mysqlX:
-						return new mysqlX.MySqlXCollection<mysqlX.Model>(Model, collectionName);
+						return new mysqlX.Collection<mysqlX.Model>(Model, collectionName);
 					case DatabaseDriver.mongo:
-						return new mongo.MongoCollection<mongo.Model>(Model, collectionName)
+						return new mongo.Collection<mongo.Model>(Model, collectionName)
 				}
 			}
 		});
 	}
 }
+
 export class VaultORM {
 	public static RelationsMode: RelationMode = RelationMode.record
 	private database: any
+	// @ts-ignore
 	ready():Promise<any>{return Promise.resolve(false);}
+	// constructor(kind:DatabaseDriver, configuration: DatabaseConfiguration, options?:MongoClientOptions) : VaultORM;// : {[p:string]:any}
 	constructor(configuration: DatabaseConfiguration, options?:MongoClientOptions) {
 		let DBBuilder:Database<any>;
 		switch(configuration.driver) {
@@ -79,5 +82,6 @@ export class VaultORM {
 			Promise.all(collections).then(() => resolve(this));
 		});
 		this.ready = () => ready;
+		return this as any;
 	}
 }

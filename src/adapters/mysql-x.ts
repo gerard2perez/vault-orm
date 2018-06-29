@@ -229,11 +229,8 @@ export class Model extends VaultModel<uuid> {
 		// @ts-ignore
 		return connection.removeOne(this._id).then(res => res.getAffectedRowsCount() === 1);
 	}
-	protected async save_relation(update_object) {
-		return Promise.resolve(false);
-	}
 }
-export class MySqlXCollection<T extends VaultModel<uuid>> extends VaultCollection<T> {
+export class Collection<T extends VaultModel<uuid>> extends VaultCollection<T> {
 	protected cursor: any
 	// @ts-ignore
 	protected collection: MysqlXCollection<T>
@@ -241,7 +238,7 @@ export class MySqlXCollection<T extends VaultModel<uuid>> extends VaultCollectio
 	protected __where__: any
 	protected __limit__: number = 0
 	protected __skip__: number = 0
-	where(query: Partial<T> = {}) {
+	where(query: Partial<T> | any = {}) {
 		this.__where__['$and'] = this.__where__['$and'] || [];
 		this.__where__['$and'].push(query);
 		return this;

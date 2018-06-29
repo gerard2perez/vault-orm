@@ -1,5 +1,5 @@
 import { RelationSingle } from "./related";
-import { VaultORM, RelationMode, DatabaseConfiguration } from "./";
+import { VaultORM, RelationMode, DatabaseConfiguration, NotInmplemented } from "./";
 import { inspect } from 'util';
 export interface IVaultField<T> {
 	kind: any
@@ -17,9 +17,8 @@ export enum IEntityState {
 	detached = <any>'detached',
 }
 export class IVaultModel {
-	protected persist(connection:any, update_object:any): Promise<boolean> { throw new Error('Not Implemented'); }
-	protected destroy(connection:any): Promise<boolean> { throw new Error('Not Implemented'); }
-	protected save_relation(update_object:any): Promise<boolean>{ throw new Error('Not Implemented'); }
+	protected persist(connection:any, update_object:any): Promise<boolean> { throw new NotInmplemented(); }
+	protected destroy(connection:any): Promise<boolean> { throw new NotInmplemented(); }
 }
 export abstract class VaultModel<ID> extends IVaultModel {
 	static storage: WeakMap<VaultModel<any>, any> = new WeakMap();

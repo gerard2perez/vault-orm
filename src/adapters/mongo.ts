@@ -33,17 +33,6 @@ export class DataBase implements Database<Db> {
 export class Model extends VaultModel<ObjectId> {
 	constructor(information: any = {}) {
 		super(information);
-		// let un_proxy = this;
-		// let data = {
-		// 	save_hooks: [],
-		// 	state: IEntityState.unchanged
-		// };
-		// let own_properties = Object.keys(Object.getPrototypeOf(this).newSchema.raw);
-		// let OwnRelations = {};
-		// for(const property of own_properties ) {
-		// 	this[property] = information[property] || undefined;
-		// }
-		// return VaultModel.createProxy(un_proxy, OwnRelations, data);
 	}
 	protected async persist(connection: any, update_object: any) {
 		if (!this.id) {
@@ -60,14 +49,11 @@ export class Model extends VaultModel<ObjectId> {
 			});
 		}
 	}
-	protected async save_relation(update_object) {
-		return Promise.resolve(false);
-	}
 	protected async destroy(connection: any) {
 		return connection.deleteOne({ _id: this._id }).then(result => result.deletedCount === 1);
 	}
 }
-export class MongoCollection<T extends VaultModel<ObjectId>> extends VaultCollection<T> {
+class MongoCollection<T extends VaultModel<ObjectId>> extends VaultCollection<T> {
 	fields(query: object) {
 		this.__projection__ = query;
 		return this;
@@ -211,3 +197,4 @@ export class MongoCollection<T extends VaultModel<ObjectId>> extends VaultCollec
 
 	}
 }
+export { MongoCollection as Collection };

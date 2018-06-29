@@ -1,19 +1,20 @@
 import { VaultORM, CollectionOfType, RelationMode, DatabaseDriver } from '../../src';
-import { VaultCollection } from '../../src/collection';
+import { Collection } from '../../src/adapters/mongo';
 import { Rigth } from './rigth';
 import { Rol } from './rol';
 import { User } from './user';
 import { Post } from './post';
+
 VaultORM.RelationsMode = RelationMode.id;
 class TestContext extends VaultORM {
 	// @ts-ignore
-	@CollectionOfType(Rigth) rigths: VaultCollection<Rigth>
+	@CollectionOfType(Rigth) rigths: Collection<Rigth>
 	// @ts-ignore
-	@CollectionOfType(Rol) rols: VaultCollection<Rol>
+	@CollectionOfType(Rol) rols: Collection<Rol>
 	// @ts-ignore
-	@CollectionOfType(User) users: VaultCollection<User>
+	@CollectionOfType(User) users: Collection<User>
 	// @ts-ignore
-	@CollectionOfType(Post) posts: VaultCollection<Post>
+	@CollectionOfType(Post) posts: Collection<Post>
 }
 const Context =  new TestContext({
 	driver: DatabaseDriver.mongo,

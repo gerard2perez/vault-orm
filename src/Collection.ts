@@ -4,7 +4,6 @@ import * as inflector from 'inflection';
 import debug from "./debug";
 import { RelationShipMode, RelationSingle, HasManyRelation } from "./related";
 import { NotInmplemented } from ".";
-
 export class VaultCollection<T extends VaultModel<any>> {
 	collectionName?: string
 	protected collection: Collection<T>
