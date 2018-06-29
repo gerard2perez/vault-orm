@@ -1,7 +1,6 @@
 import { RelationSingle } from "./related";
 import { VaultORM, RelationMode, DatabaseConfiguration } from "./";
 import { inspect } from 'util';
-import { ObjectId } from "mongodb";
 export interface IVaultField<T> {
 	kind: any
 	defaults?: T
@@ -22,18 +21,17 @@ export class IVaultModel {
 	protected destroy(connection:any): Promise<boolean> { throw new Error('Not Implemented'); }
 	protected save_relation(update_object:any): Promise<boolean>{ throw new Error('Not Implemented'); }
 }
-export abstract class VaultModel extends IVaultModel {
-	static storage: WeakMap<VaultModel, any> = new WeakMap();
+export abstract class VaultModel<ID> extends IVaultModel {
+	static storage: WeakMap<VaultModel<any>, any> = new WeakMap();
 	static configuration: IValultConfiguration
 	static collectionName?: string
 	static schema?: any
 	/**
 	 * Read Only Please
 	 */
-	protected _id: ObjectId = null
-	public get id() {
-		//@ts-ignore
-		return this._id as ObjectId;
+	protected _id: ID = null
+	public get id(): ID {
+		return this._id;
 	}
 	updated: Date
 	created: Date
@@ -48,6 +46,9 @@ export abstract class VaultModel extends IVaultModel {
 						return relations[property](proxied);
 					}
 				} else {
+					if (target[property] && target[property]._id && target[property]._id._bsontype) {
+						throw new Error('MAMA');
+					}
 					return target[property];
 				}
 
@@ -84,7 +85,6 @@ export abstract class VaultModel extends IVaultModel {
 		let { mask, raw, own, relations } = Object.getPrototypeOf(this).newSchema;
 		let jsoned = {};
 		for (const property of Object.keys(mask)) {
-			// console.log(property, this[property], this[property] instanceof RelationSingle);
 			jsoned[property] = await this[property] || null;
 			if (jsoned[property] instanceof Function) {
 				let ijson = await jsoned[property](true);

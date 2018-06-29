@@ -1,10 +1,9 @@
 import * as mysqlx from '@mysql/xdevapi';
 import { DatabaseConfiguration } from '..';
 import { VaultCollection } from '../collection';
-import { VaultModel, IVaultModel } from '../model';
+import { VaultModel } from '../model';
 import { Database } from '../database';
 import { UUID, uuid } from './uuid';
-import { resolve } from 'dns';
 import { isNumber, isBoolean } from 'util';
 interface Result {
 	getAffectedItemsCount(): number
@@ -14,11 +13,17 @@ interface Result {
 	getWarnings(): any[]
 	getWarningsCount(): number
 }
-function inspectResult(res) {
-	for (const key of Object.keys(res)) {
-		console.log(key, res[key]());
+class InspectMy {
+	static error(err) {
+		console.error(err);
+		return null;
 	}
-	return Promise.resolve(res);
+	static result(res) {
+		for (const key of Object.keys(res)) {
+			console.error(key, res[key]());
+		}
+		return Promise.resolve(res);
+	}
 }
 interface MysqlXCollection<T> {
 	add(expr?: string): any
@@ -194,7 +199,7 @@ function toSQLQuery (obj:any = {}):string {
 	final = (final || '').replace('(  )', '') || 'true';
 	return final;
 }
-export class Model extends VaultModel {
+export class Model extends VaultModel<uuid> {
 	constructor(model:any) {
 		if(model.created && !(model.created instanceof Date))model.created = new Date(model.created);
 		if(model.updated && !(model.updated instanceof Date))model.updated = new Date(model.updated);
@@ -228,7 +233,7 @@ export class Model extends VaultModel {
 		return Promise.resolve(false);
 	}
 }
-export class MySqlXCollection<T extends VaultModel> extends VaultCollection<T> {
+export class MySqlXCollection<T extends VaultModel<uuid>> extends VaultCollection<T> {
 	protected cursor: any
 	// @ts-ignore
 	protected collection: MysqlXCollection<T>

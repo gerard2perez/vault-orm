@@ -1,7 +1,7 @@
 import { VaultModel, IVaultField } from "./model";
 import { Related, RelationShipMode, Collection, RelationSingle, HasManyRelation } from "./related";
 
-export function hasMany (model:string, relation?:string) : IVaultField<Collection<VaultModel>> {
+export function hasMany (model:string, relation?:string) : IVaultField<Collection<VaultModel<any>>> {
 	return {
 		unic:false,
 		//@ts-ignore
@@ -10,7 +10,7 @@ export function hasMany (model:string, relation?:string) : IVaultField<Collectio
 	};
 }
 
-export function hasOne (model:string, relation?:string) : IVaultField<Related<VaultModel>> {
+export function hasOne (model:string, relation?:string) : IVaultField<Related<VaultModel<any>>> {
 
 	return {
 		unic:false,
@@ -19,7 +19,7 @@ export function hasOne (model:string, relation?:string) : IVaultField<Related<Va
 		defaults: undefined
 	};
 }
-export function belongsTo(model:string, relation?:string) : IVaultField<Related<VaultModel>> {
+export function belongsTo(model:string, relation?:string) : IVaultField<Related<VaultModel<any>>> {
 	return {
 		unic: false,
 		// @ts-ignore

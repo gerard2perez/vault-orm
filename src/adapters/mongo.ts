@@ -30,7 +30,7 @@ export class DataBase implements Database<Db> {
 		})
 	}
 }
-export class Model extends VaultModel {
+export class Model extends VaultModel<ObjectId> {
 	constructor(information: any = {}) {
 		super(information);
 		// let un_proxy = this;
@@ -53,7 +53,7 @@ export class Model extends VaultModel {
 		} else {
 			return connection.findOneAndUpdate({ _id: this.id }, update_object).then(error => {
 				if (!error.lastErrorObject.updatedExisting) {
-					console.log(error, { _id: this.id }, update_object);
+					console.error(error, { _id: this.id }, update_object);
 					throw new Error(error.lastErrorObject);
 				}
 				return this.id;
@@ -67,7 +67,7 @@ export class Model extends VaultModel {
 		return connection.deleteOne({ _id: this._id }).then(result => result.deletedCount === 1);
 	}
 }
-export class MongoCollection<T extends VaultModel> extends VaultCollection<T> {
+export class MongoCollection<T extends VaultModel<ObjectId>> extends VaultCollection<T> {
 	fields(query: object) {
 		this.__projection__ = query;
 		return this;

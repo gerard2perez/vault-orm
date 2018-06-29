@@ -14,9 +14,9 @@ export class ExtensibleFunction {
 	}
 }
 export class RelationSingle extends ExtensibleFunction {
-	private connection: VaultCollection<VaultModel>
-	constructor(public childKey:string, public parentKey:string, private sourceModel: VaultModel, private parentModel: VaultModel, public mode:RelationShipMode) {
-		super(  (host:VaultModel, data:boolean|null|VaultModel) => {
+	private connection: VaultCollection<VaultModel<any>>
+	constructor(public childKey:string, public parentKey:string, private sourceModel: VaultModel<any>, private parentModel: VaultModel<any>, public mode:RelationShipMode) {
+		super(  (host:VaultModel<any>, data:boolean|null|VaultModel<any>) => {
 			if( (data instanceof VaultModel || data === null) && !isBoolean(data)) {
 				return this.set(host, data);
 			} else {
@@ -24,7 +24,7 @@ export class RelationSingle extends ExtensibleFunction {
 			}
 		});
 	}
-	init(key:string, sourceModel: VaultModel, parentModel: VaultModel) {
+	init(key:string, sourceModel: VaultModel<any>, parentModel: VaultModel<any>) {
 		if(this.mode === RelationShipMode.hasOne) {
 			this.parentKey = key;
 		} else {
@@ -35,7 +35,7 @@ export class RelationSingle extends ExtensibleFunction {
 		this.connection = this.getConnection(sourceModel) || this.getConnection(parentModel);
 		return this;
 	}
-	set(host:VaultModel, target:VaultModel) {
+	set(host:VaultModel<any>, target:VaultModel<any>) {
 		switch(this.mode) {
 			case RelationShipMode.belongsTo:
 				let id = target ? target.id : undefined;
@@ -68,9 +68,9 @@ export class RelationSingle extends ExtensibleFunction {
 	}
 }
 export class HasManyRelation extends ExtensibleFunction {
-	private connection: VaultCollection<VaultModel>
-	constructor(public childKey:string, private parentKey:string, private sourceModel: VaultModel, private parentModel: VaultModel, public mode:RelationShipMode) {
-		super(  (host:VaultModel, data:boolean|null|VaultModel) => {
+	private connection: VaultCollection<VaultModel<any>>
+	constructor(public childKey:string, private parentKey:string, private sourceModel: VaultModel<any>, private parentModel: VaultModel<any>, public mode:RelationShipMode) {
+		super(  (host:VaultModel<any>, data:boolean|null|VaultModel<any>) => {
 			let act = ()=> this.get(host);
 			//@ts-ignore
 			act.Add = (data) => this.Add(host,data);
@@ -83,16 +83,15 @@ export class HasManyRelation extends ExtensibleFunction {
 	get(host:any, skipload:boolean = false){
 		return this.connection.where({[this.parentKey]: host[this.childKey]}).find();
 	}
-	Add(host:VaultModel, target:VaultModel){
+	Add(host:VaultModel<any>, target:VaultModel<any>){
 		if(target.id) {
 			VaultModel.storage.get(host).save_hooks.push(()=>{
-				// console.log(`${this.connection.collectionName}.update({_id:${target.id}},{${this.parentKey}: ${host.id}})`);
 				target[this.parentKey] = host.id;
 				return this.connection.update({_id: target.id}, {[this.parentKey]: host.id});
 			});
 		}
 	}
-	Remove(host:any, target:VaultModel){
+	Remove(host:any, target:VaultModel<any>){
 		if(target.id) {
 			VaultModel.storage.get(host).save_hooks.push(()=>{
 				// console.log(`${this.connection.collectionName}.update({_id:${target.id}},{${this.parentKey}: undefined})`);
@@ -101,7 +100,7 @@ export class HasManyRelation extends ExtensibleFunction {
 			});
 		}
 	}
-	init(key:string, sourceModel: VaultModel, parentModel: VaultModel) {
+	init(key:string, sourceModel: VaultModel<any>, parentModel: VaultModel<any>) {
 		if(this.mode === RelationShipMode.hasMany) {
 			this.parentKey = this.parentKey || key;
 		}
@@ -115,14 +114,14 @@ export class HasManyRelation extends ExtensibleFunction {
 	}
 }
 //#region interface
-export interface Related<T extends VaultModel> {
+export interface Related<T extends VaultModel<any>> {
 	():Promise<T>
 	/**
 	 * Set an object to match the relation
 	 */
 	(target:T):void
 }
-export interface Collection<T extends VaultModel> {
+export interface Collection<T extends VaultModel<any>> {
 	():Promise<T[]>
 	Add(T):void
 	Remove(T):void

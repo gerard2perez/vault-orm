@@ -1,6 +1,6 @@
 import * as mongo from "./adapters/mongo";
 import * as mysqlX from './adapters/mysql-x';
-import { MongoClientOptions, Db, MongoClient, ObjectId } from "mongodb";
+import { MongoClientOptions } from "mongodb";
 import { VaultCollection } from "./collection";
 import { VaultModel } from "./model";
 import { Database } from "./database";
@@ -20,7 +20,6 @@ export enum DatabaseDriver {
 	mongo,
 	mysqlX
 }
-export declare type Id = ObjectId | string | number;
 export interface DatabaseConfiguration {
 	driver:DatabaseDriver
 	host:string
@@ -74,7 +73,7 @@ export class VaultORM {
 			}
 			for(const property of properties) {
 				if(this[property] instanceof VaultCollection) {
-					(this[property] as VaultCollection<VaultModel>).setUpSchema(BaseClasses);
+					(this[property] as VaultCollection<VaultModel<any>>).setUpSchema(BaseClasses);
 				}
 			}
 			Promise.all(collections).then(() => resolve(this));

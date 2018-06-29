@@ -3,7 +3,7 @@ import { VaultModel } from '../src/model';
 import { User } from './mysql-x/user';
 import { Rol } from './mysql-x/rol';
 import { expect } from 'chai';
-import { Post } from './context/post';
+import { Post } from './mysql-x/post';
 
 function rdn() {
 	return [3,5,1][Math.floor(Math.random()*3)];
@@ -117,7 +117,6 @@ describe('MySQl XDevAPI Adapter', () => {
 		it('belongsTo', async () => {
 			let user = await TestContext.users.findOrCreate({name:'user1'});
 			let rol = await TestContext.rols.firstOrDefault();
-			console.log(rol.userId);
 			expect(await rol.user()).to.equals(undefined, 'relation bT is empty');
 			expect(VaultModel.storage.get(rol).save_hooks).to.have.lengthOf(0);
 			rol.user(user);
@@ -152,7 +151,6 @@ describe('MySQl XDevAPI Adapter', () => {
 
 			expect(await user.save(), 'save 1').eq(true);
 			expect(await TestContext.posts.where({userId:user.id}).find(), 'does not add objects since they are not saved').to.have.lengthOf(0);
-
 			expect(await post1.save(), 'save 2').eq(true);
 			expect(await post2.save(), 'save 3').eq(true);
 			user.posts.Add(post1);
