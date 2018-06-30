@@ -68,7 +68,12 @@ function getType(type:any) {
 			return _String();
 		case Number:
 			return _Number();
+		case Boolean:
+			return _Boolean();
+		case Object:
+			return _Json();
 		default:
+			console.log(type, '------------------');
 			return void 0;
 	}
 }
