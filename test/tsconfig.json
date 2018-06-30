@@ -2,11 +2,8 @@
   "compilerOptions": {
     "moduleResolution": "node",
     "module": "commonjs",
-    "outDir": "./",
-    "sourceMap": true,
-    "declaration": true,
+    "sourceMap": false,
     "emitDecoratorMetadata": true,
-    "allowJs": true,
     "experimentalDecorators": true,
     "target": "es2018",
     "lib":[
@@ -16,13 +13,10 @@
     "watch": true
   },
   "include": [
-    "src/**/*.ts",
-    "test/**/*.ts"
+    "./**/*.ts"
   ],
   "exclude": [
     "**/*.d.ts",
-    "test",
-    "node_modules",
-    "dist"
+    "node_modules"
   ]
 }

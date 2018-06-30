@@ -1,18 +1,18 @@
-import { Collection, VaultORM, CollectionOfType, RelationMode, DatabaseDriver } from '../../src/adapters/mysql-x';
+import { Collection, VaultORM, collection, RelationMode, DatabaseDriver } from '../../src/adapters/mysql-x';
 import { Rigth } from './rigth';
 import { Rol } from './rol';
 import { User } from './user';
 import { Post } from './post';
 VaultORM.RelationsMode = RelationMode.id;
 class TestContext extends VaultORM {
+
+	@collection(Rigth) rigths: Collection<Rigth>
 	// @ts-ignore
-	@CollectionOfType(Rigth) rigths: Collection<Rigth>
+	@collection(Rol) rols: Collection<Rol>
 	// @ts-ignore
-	@CollectionOfType(Rol) rols: Collection<Rol>
+	@collection(User) users: Collection<User>
 	// @ts-ignore
-	@CollectionOfType(User) users: Collection<User>
-	// @ts-ignore
-	@CollectionOfType(Post) posts: Collection<Post>
+	@collection(Post) posts: Collection<Post>
 }
 const Context =  new TestContext({
 	driver: DatabaseDriver.mysqlX,

@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { MongoClientOptions } from "mongodb";
 import { VaultCollection } from "./collection";
 import { VaultModel } from "./model";
@@ -27,7 +28,16 @@ export interface DatabaseConfiguration {
 	password?:string
 	ssl?:boolean
 }
-export function CollectionOfType(Model:typeof VaultModel, collectionName?: string) {
+// export function makeString(defautls?:string) {
+// 	console.log(...arguments);
+// 	throw new Error();
+// 	// return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+// 	// 	console.log(target);
+// 	// 	throw new Error();
+//     // };
+// }
+export const MODELATTRIBUTES = Symbol();
+export function collection(Model:any, collectionName?: string) {
 	return function (target: any, key: string) {
 		Object.defineProperty(target, key, {
 			configurable: true,
@@ -55,6 +65,8 @@ export class VaultORM {
 				this[property] = this[property](configuration.driver);
 				if(this[property] instanceof VaultCollection) {
 					BaseClasses[this[property].BaseClass.name] = this[property].BaseClass;
+					let attributes = Reflect.getMetadata(MODELATTRIBUTES, this[property].BaseClass);
+					this[property].BaseClass.configuration = this[property].BaseClass.configuration || attributes;
 					collections.push(DBBuilder.register(this[property]));
 				}
 			}

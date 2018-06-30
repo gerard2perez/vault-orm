@@ -1,9 +1,10 @@
-export { VaultORM, CollectionOfType, RelationMode, DatabaseDriver } from '../';
+import "reflect-metadata";
+export { VaultORM, collection, RelationMode, DatabaseDriver } from '../';
 import { MongoClientOptions, Db, Collection, MongoClient, ObjectId, FilterQuery, Cursor } from "mongodb";
 import { VaultCollection } from "../collection";
 import { Database } from "../database";
 import { VaultModel } from "../model";
-import { DatabaseConfiguration } from '..';
+import { DatabaseConfiguration, MODELATTRIBUTES } from '..';
 export class DataBase implements Database<Db> {
 	database: Db
 	ready: Promise<Db>

@@ -1,16 +1,11 @@
 import { Model } from '../../src/adapters/mongo';
-import { Related, hasMany, String, Boolean, Number, Json, belongsTo, hasOne } from '../../src/types';
+import { Related, BelongsTo, hasMany, _String, _Boolean, _Number, _Json, belongsTo, hasOne, HasOne } from '../../src/types';
 import { Rigth } from './rigth';
 import { User } from './user';
+import { Property } from '../../src/types';
 export class Rol extends Model {
-	name:string
-	rdn:number
-	rigth:Related<Rigth>
-	user:Related<User>
-	static configuration = {
-		name:String(),
-		rdn:Number(),
-		rigth: hasOne(o=>Rigth),
-		user:belongsTo(o=>User)
-	}
+	@Property name:string
+	@Property rdn:number
+	@HasOne(o=>Rigth) rigth:Related<Rigth>
+	@BelongsTo(o=>User) user:Related<User>
 }

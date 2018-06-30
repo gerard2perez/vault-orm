@@ -1,14 +1,13 @@
 import { Model } from '../../src/adapters/mongo';
-import { hasMany, String, Boolean, Number, Json, belongsTo, hasOne } from '../../src/types';
-import { Related, List } from '../../src/related';
+import { Related, List, hasMany, _String, _Boolean, _Number, _Json, belongsTo, hasOne } from '../../src/types';
 import { User } from './user';
 export class Post extends Model {
 	title:string
 	description:string
 	user:Related<User>
 	static configuration = {
-		name:String(),
-		rdn:Number(),
+		name:_String(),
+		rdn:_Number(),
 		user:belongsTo('User')
 	}
 }

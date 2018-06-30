@@ -1,11 +1,11 @@
 import { Model } from '../../src/adapters/mysql-x';
-import { Related, String, Boolean, Number, Json, belongsTo, hasOne } from '../../src/types';
+import { Related, _String, _Boolean, _Number, _Json, belongsTo, hasOne } from '../../src/types';
 import { Rol } from './rol';
 export class Rigth extends Model {
 	name:string
 	rol:Related<Rol>
 	static configuration = {
-		name:String(),
+		name:_String(),
 		rol:belongsTo('Rol')
 	}
 }
