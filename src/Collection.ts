@@ -2,7 +2,7 @@ import { Collection, Cursor, FilterQuery, ObjectId } from "mongodb";
 import { VaultModel } from "./model";
 import * as inflector from 'inflection';
 import debug from "./debug";
-import { RelationShipMode, RelationSingle, HasManyRelation } from "./related";
+import { RelationShipMode, RelationSingle, HasManyRelation } from "./relationships";
 import { NotInmplemented } from ".";
 export class VaultCollection<T extends VaultModel<any>> {
 	collectionName?: string
@@ -38,7 +38,13 @@ export class VaultCollection<T extends VaultModel<any>> {
 		for (const prop of Object.keys(classname.configuration)) {
 			let property = classname.configuration[prop];
 			if (property.kind instanceof RelationSingle) {
-				let model = Schemas[property.kind.parentModel];
+				let model;
+				if ( property.kind.parentModel instanceof Function) {
+					model = property.kind.parentModel();
+				} else {
+					console.log(prop, property.kind.parentModel);
+					model = Schemas[property.kind.parentModel];
+				}
 				if (property.kind.mode === RelationShipMode.belongsTo) {
 					let rprop: RelationSingle = property.kind.init(`${prop.toLowerCase()}Id`, model, null) as RelationSingle;
 					raw[rprop.childKey] = rprop;

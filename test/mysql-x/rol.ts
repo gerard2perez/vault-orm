@@ -1,6 +1,5 @@
 import { Model } from '../../src/adapters/mysql-x';
-import { hasMany, String, Boolean, Number, Json, belongsTo, hasOne } from '../../src/relations';
-import { Related } from '../../src/related';
+import { Related, hasMany, String, Boolean, Number, Json, belongsTo, hasOne } from '../../src/types';
 import { Rigth } from './rigth';
 import { User } from './user';
 export class Rol extends Model {

@@ -113,17 +113,3 @@ export class HasManyRelation extends ExtensibleFunction {
 		if(model)return model.prototype.vaultCollection();
 	}
 }
-//#region interface
-export interface Related<T extends VaultModel<any>> {
-	():Promise<T>
-	/**
-	 * Set an object to match the relation
-	 */
-	(target:T):void
-}
-export interface Collection<T extends VaultModel<any>> {
-	():Promise<T[]>
-	Add(T):void
-	Remove(T):void
-}
-//#endregion

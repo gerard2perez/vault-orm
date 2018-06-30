@@ -1,7 +1,8 @@
 import { VaultModel, IVaultField } from "./model";
-import { Related, RelationShipMode, Collection, RelationSingle, HasManyRelation } from "./related";
-
-export function hasMany (model:string, relation?:string) : IVaultField<Collection<VaultModel<any>>> {
+import { RelationShipMode, RelationSingle, HasManyRelation } from "./relationships";
+type retmodel = (o:any) => any;
+type model = string | retmodel;
+export function hasMany (model:model, relation?:string) : IVaultField<List<VaultModel<any>>> {
 	return {
 		unic:false,
 		//@ts-ignore
@@ -9,8 +10,7 @@ export function hasMany (model:string, relation?:string) : IVaultField<Collectio
 		defaults: undefined
 	};
 }
-
-export function hasOne (model:string, relation?:string) : IVaultField<Related<VaultModel<any>>> {
+export function hasOne (model:model, relation?:string) : IVaultField<Related<VaultModel<any>>> {
 
 	return {
 		unic:false,
@@ -19,7 +19,7 @@ export function hasOne (model:string, relation?:string) : IVaultField<Related<Va
 		defaults: undefined
 	};
 }
-export function belongsTo(model:string, relation?:string) : IVaultField<Related<VaultModel<any>>> {
+export function belongsTo(model:model, relation?:string) : IVaultField<Related<VaultModel<any>>> {
 	return {
 		unic: false,
 		// @ts-ignore
@@ -48,3 +48,15 @@ export let Boolean:IIField<boolean> = makeField.bind(null, 'boolean');
 export let String:IIField<string> = makeField.bind(null, 'string');
 export let Number:IIField<number> = makeField.bind(null, 'number');
 export let Json:IIField<object> = makeField.bind(null, 'json');
+export interface Related<T> {
+	():Promise<T>
+	/**
+	 * Set an object to match the relation
+	 */
+	(target:T):void
+}
+export interface List<T> {
+	():Promise<T[]>
+	Add(T):void
+	Remove(T):void
+}

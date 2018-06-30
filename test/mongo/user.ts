@@ -1,10 +1,9 @@
 import { Model } from '../../src/adapters/mongo';
-import { hasMany, String, Boolean, Number, Json, belongsTo, hasOne } from '../../src/relations';
-import { Related, Collection } from '../../src/related';
+import { Related, List, hasMany, String, Boolean, Number, Json, belongsTo, hasOne } from '../../src/types';
 import { Post } from './post';
 export class User extends Model {
 	name:string
-	posts:Collection<Post>
+	posts:List<Post>
 	static configuration = {
 		name:String(),
 		posts:hasMany('Post')

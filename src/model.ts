@@ -1,4 +1,4 @@
-import { RelationSingle } from "./related";
+import { RelationSingle } from "./relationships";
 import { VaultORM, RelationMode, DatabaseConfiguration, NotInmplemented } from "./";
 import { inspect } from 'util';
 export interface IVaultField<T> {

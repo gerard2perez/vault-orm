@@ -1,6 +1,5 @@
 import { Model } from '../../src/adapters/mysql-x';
-import { String, Boolean, Number, Json, belongsTo, hasOne } from '../../src/relations';
-import { Related } from '../../src/related';
+import { Related, String, Boolean, Number, Json, belongsTo, hasOne } from '../../src/types';
 import { Rol } from './rol';
 export class Rigth extends Model {
 	name:string
