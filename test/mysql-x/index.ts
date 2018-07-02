@@ -5,13 +5,9 @@ import { User } from './user';
 import { Post } from './post';
 VaultORM.RelationsMode = RelationMode.id;
 class TestContext extends VaultORM {
-
 	@collection(Rigth) rigths: Collection<Rigth>
-	// @ts-ignore
 	@collection(Rol) rols: Collection<Rol>
-	// @ts-ignore
 	@collection(User) users: Collection<User>
-	// @ts-ignore
 	@collection(Post) posts: Collection<Post>
 }
 const Context =  new TestContext({

@@ -104,3 +104,8 @@ export function BelongsTo(modelResolver:(o:any)=>any) {
 		extendModel(target, property, descriptor, belongsTo(modelResolver));
 	}
 }
+export function HasMany(modelResolver:(o:any)=>any) {
+	return (target: any, property: string, descriptor?: PropertyDescriptor) : void => {
+		extendModel(target, property, descriptor, hasMany(modelResolver));
+	}
+}

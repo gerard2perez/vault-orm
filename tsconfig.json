@@ -6,7 +6,6 @@
     "sourceMap": true,
     "declaration": true,
     "emitDecoratorMetadata": true,
-    "allowJs": true,
     "experimentalDecorators": true,
     "target": "es2018",
     "lib":[
