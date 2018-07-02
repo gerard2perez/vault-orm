@@ -1,5 +1,5 @@
 import { Model } from '../../src/adapters/mongo';
-import { Related, List, hasMany, _String, _Boolean, _Number, _Json, belongsTo, hasOne, Property, HasMany } from '../../src/types';
+import { Related, List, Property, HasMany, HasOne, BelongsTo } from '../../src/types';
 import { Post } from './post';
 export class User extends Model {
 	@Property name:string

@@ -4,7 +4,7 @@ import { RelationShipMode, RelationSingle, HasManyRelation } from "./relationshi
 import { MODELATTRIBUTES } from ".";
 type retmodel = (o:any) => any;
 type model = string | retmodel;
-export function hasMany (model:model, relation?:string) : IVaultField<List<VaultModel<any>>> {
+function hasMany (model:model, relation?:string) : IVaultField<List<VaultModel<any>>> {
 	return {
 		unic:false,
 		//@ts-ignore
@@ -12,7 +12,7 @@ export function hasMany (model:model, relation?:string) : IVaultField<List<Vault
 		defaults: undefined
 	};
 }
-export function hasOne (model:model, relation?:string) : IVaultField<Related<VaultModel<any>>> {
+function hasOne (model:model, relation?:string) : IVaultField<Related<VaultModel<any>>> {
 
 	return {
 		unic:false,
@@ -21,7 +21,7 @@ export function hasOne (model:model, relation?:string) : IVaultField<Related<Vau
 		defaults: undefined
 	};
 }
-export function belongsTo(model:model, relation?:string) : IVaultField<Related<VaultModel<any>>> {
+function belongsTo(model:model, relation?:string) : IVaultField<Related<VaultModel<any>>> {
 	return {
 		unic: false,
 		// @ts-ignore
@@ -34,28 +34,29 @@ export interface IIField<T> {
 	(defaults:T) : IVaultField<T>;
 	(unic:boolean, defaults?:T) : IVaultField<T>;
 }
-function makeField<T>(kind:string, unic?:boolean | T, defaults?:T) {
+function makeField<T>(kind:string):IVaultField<T>
+function makeField<T>(kind:string, unic:boolean):IVaultField<T>
+function makeField<T>(kind:string, defaults:T):IVaultField<T>
+function makeField<T>(kind:string, unic:boolean, defaults:T):IVaultField<T>
+function makeField<T>(...args:any[]) {
+	let [kind, unic, defaults] = args;
 	if(unic !==undefined && typeof unic !== 'boolean' ) {
 		defaults = unic;
 		unic = false;
 	}
 	unic = unic || false;
-	return {
-		kind,
-		unic,
-		defaults
-	};
+	return { kind, unic, defaults };
 }
-export let _Boolean:IIField<boolean> = makeField.bind(null, 'boolean');
-export let _String:IIField<string> = makeField.bind(null, 'string');
-export let _Number:IIField<number> = makeField.bind(null, 'number');
-export let _Json:IIField<object> = makeField.bind(null, 'json');
 export interface Related<T> {
 	():Promise<T>
 	/**
 	 * Set an object to match the relation
 	 */
 	(target:T):void
+	/**
+	 * Removes a relation
+	 */
+	(target:null):void
 }
 export interface List<T> {
 	():Promise<T[]>
@@ -65,13 +66,13 @@ export interface List<T> {
 function getType(type:any) {
 	switch(type) {
 		case String:
-			return _String();
+			return makeField('string');
 		case Number:
-			return _Number();
+			return makeField('number');
 		case Boolean:
-			return _Boolean();
+			return makeField('boolean');
 		case Object:
-			return _Json();
+		return makeField('json');
 		default:
 			console.log(type, '------------------');
 			return void 0;
@@ -93,7 +94,6 @@ export function Property(...args:any[]) : void | any {
 		extendModel(target, property, descriptor, args[0]);
 	};
 }
-
 export function HasOne(modelResolver:(o:any)=>any) {
 	return (target: any, property: string, descriptor?: PropertyDescriptor) : void => {
 		extendModel(target, property, descriptor, hasOne(modelResolver));
