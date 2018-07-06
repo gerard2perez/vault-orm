@@ -15,8 +15,7 @@
     "watch": true
   },
   "include": [
-    "src/**/*.ts",
-    "test/**/*.ts"
+    "src/**/*.ts"
   ],
   "exclude": [
     "**/*.d.ts",

@@ -48,6 +48,9 @@ function makeField<T>(...args:any[]) {
 	return { kind, unic, defaults };
 }
 export interface Related<T> {
+	/**
+	 * Get the Relation
+	 */
 	():Promise<T>
 	/**
 	 * Set an object to match the relation
@@ -72,7 +75,9 @@ function getType(type:any) {
 		case Boolean:
 			return makeField('boolean');
 		case Object:
-		return makeField('json');
+			return makeField('json');
+		case Date:
+			return makeField('date');
 		default:
 			console.log(type, '------------------');
 			return void 0;
