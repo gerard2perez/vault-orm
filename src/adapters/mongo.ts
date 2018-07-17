@@ -9,6 +9,7 @@ export class DataBase implements Database<Db> {
 	database: Db
 	ready: Promise<Db>
 	constructor(private orm: any, configuration: DatabaseConfiguration, options: MongoClientOptions) {
+		options = Object.assign({}, {useNewUrlParser:true}, options);
 		this.ready = MongoClient.connect(`mongodb://${configuration.host}:${configuration.port}`, options).then(client => {
 			this.database = client.db(configuration.database);
 			return this.database
