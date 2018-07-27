@@ -88,9 +88,11 @@ export abstract class VaultModel<ID> extends IVaultModel {
 			if (jsoned[property] instanceof Function) {
 				let ijson = await jsoned[property](true);
 				if (ijson && ijson.json) ijson = await ijson.json();
-				jsoned[property] = !ijson ? null : (VaultORM.RelationsMode === RelationMode.id ? ijson.id : ijson);
+				jsoned[property] = !ijson ? null : (VaultORM.RelationsMode === RelationMode.id ? ( typeof ijson.id === 'object' ? ijson.id.toString() : ijson.id) : ijson);
 				jsoned[property] = jsoned[property] || null;
 			}
+			if(property === 'id' && typeof jsoned[property] === 'object')jsoned[property] = jsoned[property].toString();
+			if(jsoned[property] instanceof Date)jsoned[property]=jsoned[property].toISOString();
 		}
 		return jsoned;
 	}

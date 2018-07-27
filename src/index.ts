@@ -11,6 +11,10 @@ export class NotInmplemented extends Error {
         Error.captureStackTrace(this, NotInmplemented);
     }
 }
+export enum Sorting {
+	asc = 1,
+	desc = -1
+}
 export enum RelationMode {
 	id,
 	record

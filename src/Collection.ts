@@ -3,14 +3,14 @@ import { VaultModel } from "./model";
 import * as inflector from 'inflection';
 import debug from "./debug";
 import { RelationShipMode, RelationSingle, HasManyRelation } from "./relationships";
-import { NotInmplemented } from ".";
+import { NotInmplemented, Sorting } from ".";
 export class VaultCollection<T extends VaultModel<any>> {
 	collectionName?: string
 	protected collection: Collection<T>
 	protected BaseClass: any
 	protected cursor: Cursor<T>
 	protected __where__: FilterQuery<T> = {}
-	protected __projection__: Object = {}
+	protected __projection__: Object
 	constructor(classname: typeof VaultModel, colname?: string) {
 		this.collectionName = colname || classname.collectionName;
 		if (!this.collectionName) {
@@ -82,6 +82,9 @@ export class VaultCollection<T extends VaultModel<any>> {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
 	remove(query: FilterQuery<T>): Promise<any> {
+		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
+	}
+	sort(key:string, order:Sorting = Sorting.asc):this {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
 	update(query: FilterQuery<T>, keys?: Object):Promise<any> {

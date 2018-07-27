@@ -4,7 +4,7 @@ import { MongoClientOptions, Db, Collection, MongoClient, ObjectId, FilterQuery,
 import { VaultCollection } from "../collection";
 import { Database } from "../database";
 import { VaultModel } from "../model";
-import { DatabaseConfiguration, MODELATTRIBUTES } from '..';
+import { DatabaseConfiguration, MODELATTRIBUTES, Sorting } from '..';
 export class DataBase implements Database<Db> {
 	database: Db
 	ready: Promise<Db>
@@ -56,29 +56,12 @@ export class Model extends VaultModel<ObjectId> {
 	}
 }
 class MongoCollection<T extends VaultModel<ObjectId>> extends VaultCollection<T> {
+	protected __limit__: number = 0
+	protected __skip__: number = 0
+	protected __sort__:any[] = undefined
 	fields(query: object) {
 		this.__projection__ = query;
 		return this;
-	}
-	protected toArray(cursor: Cursor<T>) {
-		if (this.__projection__) {
-			cursor.project(this.__projection__);
-			this.__projection__ = undefined;
-		}
-		let rdn = Math.floor(Math.random() * 1000);
-		let id = `toArray${rdn}`;
-		let results: T[] = [];
-		return new Promise(async (resolve, reject) => {
-			let item = await cursor.next();
-			while (item) {
-				let created = Reflect.construct(this.BaseClass, [item]) as T;
-				// // @ts-ignore
-				// await created.loadRelation();
-				results.push(created);
-				item = await cursor.next();
-			}
-			resolve(results);
-		}) as Promise<T[]>;
 	}
 	async remove(query: FilterQuery<T>) {
 		return (await this.collection.remove(query)).result;
@@ -117,8 +100,7 @@ class MongoCollection<T extends VaultModel<ObjectId>> extends VaultCollection<T>
 		return this;
 	}
 	limit(n: number) {
-		if (!this.cursor) this.cursor = this.collection.find<T>();
-		this.cursor = this.cursor.limit(n);
+		this.__limit__ = n;
 		return this;
 	}
 	/**
@@ -128,9 +110,12 @@ class MongoCollection<T extends VaultModel<ObjectId>> extends VaultCollection<T>
 	take(n: number) {
 		return this.limit(n);
 	}
+	sort (key:string, order:Sorting = Sorting.asc) {
+		this.__sort__ = [key, order];
+		return this;
+	}
 	skip(n: number) {
-		if (!this.cursor) this.cursor = this.collection.find<T>();
-		this.cursor = this.cursor.skip(n);
+		this.__skip__ = n;
 		return this;
 	}
 	findOne(): Promise<T>
@@ -152,14 +137,12 @@ class MongoCollection<T extends VaultModel<ObjectId>> extends VaultCollection<T>
 	firstOrDefault(StringId: string): Promise<T>
 	firstOrDefault(query: FilterQuery<T>): Promise<T>
 	firstOrDefault(queryOrId?: any) {
-		if (!this.cursor) this.cursor = this.collection.find<T>();
 		if (typeof (queryOrId) === 'string' && queryOrId.length === 24) queryOrId = new ObjectId(queryOrId);
 		if (queryOrId instanceof ObjectId) {
 			queryOrId = { _id: queryOrId }
 		}
 		if (queryOrId && typeof (queryOrId) === 'object') {
 			this.where(queryOrId);
-			this.cursor.filter(this.__where__);
 		}
 		this.cursor.limit(1);
 		return this.execute(this.__where__).then(results => results[0]);
@@ -175,15 +158,47 @@ class MongoCollection<T extends VaultModel<ObjectId>> extends VaultCollection<T>
 		return execution_cursor.explain();
 	}
 	protected execute(query: any) {
-		if (this.cursor) {
-			this.cursor = this.cursor.filter(query);
-		} else {
-			this.cursor = this.collection.find<T>(this.__where__);
+		let cursor = query ? this.collection.find(query) : this.collection.find();
+		if(this.__skip__)cursor = cursor.skip(this.__skip__);
+		if(this.__limit__)cursor = cursor.limit(this.__limit__);
+		if(this.__sort__) {
+			let stages:any[] = [
+				{ $addFields: {
+					_sort_:{ $toLower:`$${this.__sort__[0]}`}
+				}},
+				{ $match: query },
+				{ $sort: {  _sort_: this.__sort__[1]} },
+			];
+			if(this.__skip__)stages.push({$skip: this.__skip__});
+			if(this.__limit__)stages.push({$limit: this.__limit__});
+			if (this.__projection__) stages.push({$project: this.__projection__});
+			// @ts-ignore
+			cursor = this.collection.aggregate(stages);
 		}
-		const execution_cursor = this.cursor;
-		this.cursor = null;
-		this.__where__ = {};
-		return this.toArray(execution_cursor);
+		const execution_cursor = cursor;
+		return this.toArray(execution_cursor).finally(()=>{
+			this.cursor = null;
+			this.__skip__ = undefined;
+			this.__limit__ = undefined;
+			this.__sort__ = undefined;
+			this.__where__ = {};
+		});
+	}
+	protected toArray(cursor: Cursor<T>) {
+		let rdn = Math.floor(Math.random() * 1000);
+		let id = `toArray${rdn}`;
+		let results: T[] = [];
+		return new Promise(async (resolve, reject) => {
+			let item = await cursor.next();
+			while (item) {
+				let created = Reflect.construct(this.BaseClass, [item]) as T;
+				// // @ts-ignore
+				// await created.loadRelation();
+				results.push(created);
+				item = await cursor.next();
+			}
+			resolve(results);
+		}) as Promise<T[]>;
 	}
 	count(applySkipLimit: boolean = false) {
 		let count: Promise<number>;
