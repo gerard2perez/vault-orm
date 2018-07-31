@@ -40,7 +40,9 @@ export abstract class VaultModel<ID> extends IVaultModel {
 			get(target: any, property: any) {
 				if (Object.getOwnPropertyNames(relations).includes(property)) {
 					if (relations[property] instanceof RelationSingle) {
-						return (id) => relations[property](proxied, id);
+						return (id) => {
+							return relations[property](proxied, id);
+						};
 					} else {
 						return relations[property](proxied);
 					}
@@ -80,16 +82,18 @@ export abstract class VaultModel<ID> extends IVaultModel {
 		}
 		return VaultModel.createProxy(un_proxy, OwnRelations, data);
 	}
-	async json() {
+	async json(loaddep:boolean=true) {
 		let { mask, raw, own, relations } = Object.getPrototypeOf(this).newSchema;
 		let jsoned = {};
 		for (const property of Object.keys(mask)) {
 			jsoned[property] = await this[property] || null;
-			if (jsoned[property] instanceof Function) {
+			if (jsoned[property] instanceof Function && loaddep) {
 				let ijson = await jsoned[property](true);
-				if (ijson && ijson.json) ijson = await ijson.json();
+				if (ijson && ijson.json) ijson = await ijson.json(false);
 				jsoned[property] = !ijson ? null : (VaultORM.RelationsMode === RelationMode.id ? ( typeof ijson.id === 'object' ? ijson.id.toString() : ijson.id) : ijson);
 				jsoned[property] = jsoned[property] || null;
+			} else if (jsoned[property] instanceof Function) {
+				delete jsoned[property];
 			}
 			if(property === 'id' && typeof jsoned[property] === 'object')jsoned[property] = jsoned[property].toString();
 			if(jsoned[property] instanceof Date)jsoned[property]=jsoned[property].toISOString();

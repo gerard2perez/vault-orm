@@ -9,7 +9,7 @@ export class DataBase implements Database<Db> {
 	database: Db
 	ready: Promise<Db>
 	constructor(private orm: any, configuration: DatabaseConfiguration, options: MongoClientOptions) {
-		options = Object.assign({}, {useNewUrlParser:true}, options);
+		options = Object.assign({}, { useNewUrlParser: true }, options);
 		this.ready = MongoClient.connect(`mongodb://${configuration.host}:${configuration.port}`, options).then(client => {
 			this.database = client.db(configuration.database);
 			return this.database
@@ -58,7 +58,7 @@ export class Model extends VaultModel<ObjectId> {
 class MongoCollection<T extends VaultModel<ObjectId>> extends VaultCollection<T> {
 	protected __limit__: number = 0
 	protected __skip__: number = 0
-	protected __sort__:any[] = undefined
+	protected __sort__: any[] = undefined
 	fields(query: object) {
 		this.__projection__ = query;
 		return this;
@@ -83,25 +83,29 @@ class MongoCollection<T extends VaultModel<ObjectId>> extends VaultCollection<T>
 		return item;
 	}
 	findAll() {
-		return this.toArray(this.collection.find<T>({}));
+		const { executionContext } = this;
+		return executionContext.toArray(executionContext.collection.find<T>({}));
 	}
 	where(query: FilterQuery<T> = {}) {
-		this.__where__['$and'] = this.__where__['$and'] || [];
-		this.__where__['$and'].push(query);
-		return this;
+		const { executionContext } = this;
+		executionContext.__where__['$and'] = executionContext.__where__['$and'] || [];
+		executionContext.__where__['$and'].push(query);
+		return executionContext;
 	}
 	orWhere(query: FilterQuery<T>) {
-		this.__where__['$or'] = this.__where__['$or'] || [];
-		this.__where__['$or'].push(query);
-		if (this.__where__['$and']) {
-			this.__where__['$or'].push({ '$and': this.__where__['$and'] });
-			delete this.__where__['$and'];
+		const { executionContext } = this;
+		executionContext.__where__['$or'] = executionContext.__where__['$or'] || [];
+		executionContext.__where__['$or'].push(query);
+		if (executionContext.__where__['$and']) {
+			executionContext.__where__['$or'].push({ '$and': executionContext.__where__['$and'] });
+			delete executionContext.__where__['$and'];
 		}
-		return this;
+		return executionContext;
 	}
 	limit(n: number) {
-		this.__limit__ = n;
-		return this;
+		const { executionContext } = this;
+		executionContext.__limit__ = n;
+		return executionContext;
 	}
 	/**
 	 * @alias take
@@ -110,13 +114,15 @@ class MongoCollection<T extends VaultModel<ObjectId>> extends VaultCollection<T>
 	take(n: number) {
 		return this.limit(n);
 	}
-	sort (key:string, order:Sorting = Sorting.asc) {
-		this.__sort__ = [key, order];
-		return this;
+	sort(key: string, order: Sorting = Sorting.asc) {
+		const { executionContext } = this;
+		executionContext.__sort__ = [key, order];
+		return executionContext;
 	}
 	skip(n: number) {
-		this.__skip__ = n;
-		return this;
+		const { executionContext } = this;
+		executionContext.__skip__ = n;
+		return executionContext;
 	}
 	findOne(): Promise<T>
 	findOne(Id: ObjectId): Promise<T>
@@ -127,7 +133,8 @@ class MongoCollection<T extends VaultModel<ObjectId>> extends VaultCollection<T>
 	findOne(query: FilterQuery<T>): Promise<T>
 	/**@alias firstOrDefault */
 	findOne(queryOrId?: any) {
-		return this.firstOrDefault(queryOrId);
+		const { executionContext } = this;
+		return executionContext.firstOrDefault(queryOrId);
 	}
 	firstOrDefault(): Promise<T>
 	firstOrDefault(Id: ObjectId): Promise<T>
@@ -137,46 +144,51 @@ class MongoCollection<T extends VaultModel<ObjectId>> extends VaultCollection<T>
 	firstOrDefault(StringId: string): Promise<T>
 	firstOrDefault(query: FilterQuery<T>): Promise<T>
 	firstOrDefault(queryOrId?: any) {
+		const { executionContext } = this;
 		if (typeof (queryOrId) === 'string' && queryOrId.length === 24) queryOrId = new ObjectId(queryOrId);
 		if (queryOrId instanceof ObjectId) {
 			queryOrId = { _id: queryOrId }
 		}
 		if (queryOrId && typeof (queryOrId) === 'object') {
-			this.where(queryOrId);
+			executionContext.where(queryOrId);
 		}
-		this.cursor.limit(1);
-		return this.execute(this.__where__).then(results => results[0]);
+		executionContext.limit(1);
+		return executionContext.execute().then(results => results[0]);
 	}
 	find() {
-		return this.execute(this.__where__);
+		const { executionContext } = this;
+		return executionContext.execute();
 	}
 	explain() {
-		this.cursor = this.collection.find<T>(this.__where__);
-		const execution_cursor = this.cursor;
+		const { executionContext } = this;
+		executionContext.cursor = executionContext.collection.find<T>(executionContext.__where__);
+		const execution_cursor = executionContext.cursor;
 		this.cursor = null;
 		this.__where__ = {};
 		return execution_cursor.explain();
 	}
-	protected execute(query: any) {
-		let cursor = query ? this.collection.find(query) : this.collection.find();
-		if(this.__skip__)cursor = cursor.skip(this.__skip__);
-		if(this.__limit__)cursor = cursor.limit(this.__limit__);
-		if(this.__sort__) {
-			let stages:any[] = [
-				{ $addFields: {
-					_sort_:{ $toLower:`$${this.__sort__[0]}`}
-				}},
-				{ $match: query },
-				{ $sort: {  _sort_: this.__sort__[1]} },
+	protected execute() {
+		let cursor = this.collection.find(this.__where__);
+		if (this.__skip__) cursor = cursor.skip(this.__skip__);
+		if (this.__limit__) cursor = cursor.limit(this.__limit__);
+		if (this.__sort__) {
+			let stages: any[] = [
+				{
+					$addFields: {
+						_sort_: { $toLower: `$${this.__sort__[0]}` }
+					}
+				},
+				{ $match: this.__where__ },
+				{ $sort: { _sort_: this.__sort__[1] } },
 			];
-			if(this.__skip__)stages.push({$skip: this.__skip__});
-			if(this.__limit__)stages.push({$limit: this.__limit__});
-			if (this.__projection__) stages.push({$project: this.__projection__});
+			if (this.__skip__) stages.push({ $skip: this.__skip__ });
+			if (this.__limit__) stages.push({ $limit: this.__limit__ });
+			if (this.__projection__) stages.push({ $project: this.__projection__ });
 			// @ts-ignore
 			cursor = this.collection.aggregate(stages);
 		}
 		const execution_cursor = cursor;
-		return this.toArray(execution_cursor).finally(()=>{
+		return this.toArray(execution_cursor).finally(() => {
 			this.cursor = null;
 			this.__skip__ = undefined;
 			this.__limit__ = undefined;

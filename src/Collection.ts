@@ -5,13 +5,28 @@ import debug from "./debug";
 import { RelationShipMode, RelationSingle, HasManyRelation } from "./relationships";
 import { NotInmplemented, Sorting } from ".";
 export class VaultCollection<T extends VaultModel<any>> {
+	protected get executionContext ():this {
+		if(!this.cloned) {
+			//@ts-ignore
+			let cloned = new this.constructor();
+			// for(const key of Object.getOwnPropertyNames(this)) {
+			// 	cloned[key] = this[key];
+			// }
+			cloned.BaseClass = this.BaseClass;
+			cloned.collection = this.collection;
+			cloned.cloned = true;
+			return cloned;
+		}
+		return this;
+	}
+	private cloned:boolean = false
 	collectionName?: string
 	protected collection: Collection<T>
 	protected BaseClass: any
 	protected cursor: Cursor<T>
 	protected __where__: FilterQuery<T> = {}
 	protected __projection__: Object
-	constructor(classname: typeof VaultModel, colname?: string) {
+	Initialize(classname: typeof VaultModel, colname?: string) {
 		this.collectionName = colname || classname.collectionName;
 		if (!this.collectionName) {
 			let name = inflector.pluralize(classname.name.toLowerCase());
@@ -30,6 +45,7 @@ export class VaultCollection<T extends VaultModel<any>> {
 		//@ts-ignore
 		classname.prototype.vaultCollection = () => this;
 		this.BaseClass = classname;
+		return this;
 	}
 	public setUpSchema(Schemas: any) {
 

@@ -40,14 +40,15 @@ export interface DatabaseConfiguration {
 // 	// 	throw new Error();
 //     // };
 // }
-export const MODELATTRIBUTES = Symbol();
+export const MODELATTRIBUTES = 'vault-orm:design';
 export function collection(Model:any, collectionName?: string) {
 	return function (target: any, key: string) {
 		Object.defineProperty(target, key, {
 			configurable: true,
 			writable: true,
 			value: (driver:DatabaseDriver) => {
-				return new (require(`./adapters/${driver.toString()}`)).Collection(Model, collectionName);
+				let collection =new (require(`./adapters/${driver.toString()}`)).Collection;
+				return collection.Initialize(Model, collectionName);
 			}
 		});
 	}
