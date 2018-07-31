@@ -85,15 +85,26 @@ export abstract class VaultModel<ID> extends IVaultModel {
 	async json(loaddep:boolean=true) {
 		let { mask, raw, own, relations } = Object.getPrototypeOf(this).newSchema;
 		let jsoned = {};
+		let dep_relations_name = [];
+		let dep_relations = [];
 		for (const property of Object.keys(mask)) {
 			jsoned[property] = await this[property] || null;
 			if (jsoned[property] instanceof Function && loaddep) {
-				let ijson = await jsoned[property](true);
-				if (ijson && ijson.json) ijson = await ijson.json(false);
-				jsoned[property] = !ijson ? null : (VaultORM.RelationsMode === RelationMode.id ? ( typeof ijson.id === 'object' ? ijson.id.toString() : ijson.id) : ijson);
-				jsoned[property] = jsoned[property] || null;
+				dep_relations_name.push(property);
+				dep_relations.push( jsoned[property](true).then(ijson=>{
+					if (ijson && ijson.json) {
+						return ijson.json(false).then(ijson=>{
+							return !ijson ? null : (VaultORM.RelationsMode === RelationMode.id ? ( typeof ijson.id === 'object' ? ijson.id.toString() : ijson.id) : ijson);
+						});
+					}
+					return ijson || null;
+				}));
 			} else if (jsoned[property] instanceof Function) {
 				delete jsoned[property];
+			}
+			let dep_props = await Promise.all(dep_relations)
+			for(let i =0; i< dep_props.length; i ++) {
+				jsoned[dep_relations_name[i]] = dep_props[i];
 			}
 			if(property === 'id' && typeof jsoned[property] === 'object')jsoned[property] = jsoned[property].toString();
 			if(jsoned[property] instanceof Date)jsoned[property]=jsoned[property].toISOString();
