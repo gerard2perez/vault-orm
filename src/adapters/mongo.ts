@@ -189,11 +189,11 @@ class MongoCollection<T extends VaultModel<ObjectId>> extends VaultCollection<T>
 		}
 		const execution_cursor = cursor;
 		return this.toArray(execution_cursor).finally(() => {
-			this.cursor = null;
-			this.__skip__ = undefined;
-			this.__limit__ = undefined;
-			this.__sort__ = undefined;
-			this.__where__ = {};
+			// this.cursor = null;
+			// this.__skip__ = undefined;
+			// this.__limit__ = undefined;
+			// this.__sort__ = undefined;
+			// this.__where__ = {};
 		});
 	}
 	protected toArray(cursor: Cursor<T>) {
@@ -213,15 +213,16 @@ class MongoCollection<T extends VaultModel<ObjectId>> extends VaultCollection<T>
 		}) as Promise<T[]>;
 	}
 	count(applySkipLimit: boolean = false) {
+		const { executionContext } = this;
 		let count: Promise<number>;
-		if (this.cursor) {
-			count = this.cursor.filter(this.__where__).count(applySkipLimit);
+		if (executionContext.cursor) {
+			count = executionContext.cursor.filter(executionContext.__where__).count(applySkipLimit);
 		} else {
-			count = this.collection.find(this.__where__).count(applySkipLimit);
+			count = executionContext.collection.find(executionContext.__where__).count(applySkipLimit);
 		}
 		return count.finally(() => {
-			this.cursor = null;
-			this.__where__ = {};
+			// this.cursor = null;
+			// this.__where__ = {};
 		});
 
 	}
