@@ -42,7 +42,7 @@ export class Model extends VaultModel<ObjectId> {
 				return inserted.insertedId;
 			});
 		} else {
-			return connection.findOneAndUpdate({ _id: this.id }, update_object).then(error => {
+			return connection.findOneAndUpdate({ _id: this.id }, {$set: update_object}).then(error => {
 				if (!error.lastErrorObject.updatedExisting) {
 					console.error(error, { _id: this.id }, update_object);
 					throw new Error(error.lastErrorObject);
