@@ -56,6 +56,7 @@ export class Model extends VaultModel<ObjectId> {
 	}
 }
 class MongoCollection<T extends VaultModel<ObjectId>> extends VaultCollection<T> {
+	protected __count__: boolean = false
 	protected __limit__: number = 0
 	protected __skip__: number = 0
 	protected __sort__: any[] = undefined
@@ -167,8 +168,9 @@ class MongoCollection<T extends VaultModel<ObjectId>> extends VaultCollection<T>
 		this.__where__ = {};
 		return execution_cursor.explain();
 	}
-	protected execute() {
+	protected execute(count:boolean = false) {
 		let cursor = this.collection.find(this.__where__);
+		if (this.count)
 		if (this.__skip__) cursor = cursor.skip(this.__skip__);
 		if (this.__limit__) cursor = cursor.limit(this.__limit__);
 		if (this.__sort__) {
@@ -187,14 +189,18 @@ class MongoCollection<T extends VaultModel<ObjectId>> extends VaultCollection<T>
 			// @ts-ignore
 			cursor = this.collection.aggregate(stages);
 		}
-		const execution_cursor = cursor;
-		return this.toArray(execution_cursor).finally(() => {
-			// this.cursor = null;
-			// this.__skip__ = undefined;
-			// this.__limit__ = undefined;
-			// this.__sort__ = undefined;
-			// this.__where__ = {};
-		});
+		if(count) {
+			cursor.count(this.__count__);
+		} else {
+			const execution_cursor = cursor;
+			return this.toArray(execution_cursor).finally(() => {
+				// this.cursor = null;
+				// this.__skip__ = undefined;
+				// this.__limit__ = undefined;
+				// this.__sort__ = undefined;
+				// this.__where__ = {};
+			});
+		}
 	}
 	protected toArray(cursor: Cursor<T>) {
 		let rdn = Math.floor(Math.random() * 1000);
@@ -215,11 +221,20 @@ class MongoCollection<T extends VaultModel<ObjectId>> extends VaultCollection<T>
 	count(applySkipLimit: boolean = false) {
 		const { executionContext } = this;
 		let count: Promise<number>;
-		if (executionContext.cursor) {
-			count = executionContext.cursor.filter(executionContext.__where__).count(applySkipLimit);
-		} else {
-			count = executionContext.collection.find(executionContext.__where__).count(applySkipLimit);
-		}
+		// if (executionContext.cursor) {
+		// 	count = executionContext.cursor.filter(executionContext.__where__).count(applySkipLimit);
+		// } else {
+			if(applySkipLimit) {
+				let cursor = executionContext.collection.find(executionContext.__where__);
+				cursor.skip(this.__skip__);
+				cursor.limit(this.__limit__);
+				count = cursor.count(true);
+				// executionContext.limit(this.__limit__);
+			} else {
+				count = executionContext.collection.find(executionContext.__where__).count();
+			}
+
+		// }
 		return count.finally(() => {
 			// this.cursor = null;
 			// this.__where__ = {};
