@@ -4,13 +4,13 @@ import { DatabaseConfiguration } from '..';
 import { VaultCollection } from '../collection';
 import { VaultModel } from '../model';
 import { Database } from '../database';
-import { UUID, uuid } from './uuid';
+import { UUID, uuidv4 } from './uuid';
 import { isNumber, isBoolean } from 'util';
 interface Result {
 	getAffectedItemsCount(): number
 	getAffectedRowsCount(): number
 	getAutoIncrementValue(): number
-	getGeneratedIds(): uuid[]
+	getGeneratedIds(): string[]
 	getWarnings(): any[]
 	getWarningsCount(): number
 }
@@ -31,13 +31,13 @@ interface MysqlXCollection<T> {
 	find(expr?: string): any
 	modify(expr?: string): any
 	remove(expr?: string): any
-	addOrReplaceOne(id: uuid, data: Partial<T>): Promise<Result>
+	addOrReplaceOne(id: uuidv4, data: Partial<T>): Promise<Result>
 	createIndex(name: string, data: any): Promise<boolean>
 	dropIndex(name: string): Promise<boolean>
 	existsInDatabase(): Promise<boolean>
-	getOne(id: uuid): Promise<T>
-	removeOne(id: uuid): Promise<Result>
-	replaceOne(id: uuid, data: Partial<T>): Promise<Result>
+	getOne(id: uuidv4): Promise<T>
+	removeOne(id: uuidv4): Promise<Result>
+	replaceOne(id: uuidv4, data: Partial<T>): Promise<Result>
 }
 export class DataBase implements Database<any> {
 	database: any
@@ -200,7 +200,7 @@ function toSQLQuery (obj:any = {}):string {
 	final = (final || '').replace('(  )', '') || 'true';
 	return final;
 }
-export class Model extends VaultModel<uuid> {
+export class Model extends VaultModel<uuidv4> {
 	constructor(model:any) {
 		if(model.created && !(model.created instanceof Date))model.created = new Date(model.created);
 		if(model.updated && !(model.updated instanceof Date))model.updated = new Date(model.updated);
@@ -231,7 +231,7 @@ export class Model extends VaultModel<uuid> {
 		return connection.removeOne(this._id).then(res => res.getAffectedRowsCount() === 1);
 	}
 }
-export class Collection<T extends VaultModel<uuid>> extends VaultCollection<T> {
+export class Collection<T extends VaultModel<uuidv4>> extends VaultCollection<T> {
 	protected cursor: any
 	// @ts-ignore
 	protected collection: MysqlXCollection<T>
@@ -311,14 +311,14 @@ export class Collection<T extends VaultModel<uuid>> extends VaultCollection<T> {
 		return this.toArray(this.collection.find());
 	}
 	findOne(): Promise<T>
-	findOne(StringId: string): Promise<T>
+	findOne(StringId: uuidv4): Promise<T>
 	findOne(query: Partial<T>): Promise<T>
 	/**@alias firstOrDefault */
 	findOne(queryOrId?: any) {
 		return this.firstOrDefault(queryOrId);
 	}
 	firstOrDefault(): Promise<T>
-	firstOrDefault(Id: uuid): Promise<T>
+	firstOrDefault(Id: uuidv4): Promise<T>
 	firstOrDefault(query: Partial<T>): Promise<T>
 	firstOrDefault(queryOrId?: any) {
 		if (typeof (queryOrId) === 'string' && queryOrId.length === 32) queryOrId = { _id: queryOrId };

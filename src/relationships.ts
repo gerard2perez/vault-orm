@@ -55,7 +55,6 @@ export class RelationSingle extends ExtensibleFunction {
 		}
 	}
 	get (host:any, skipload:boolean = false) {
-		// console.log(skipload, this.mode === RelationShipMode.belongsTo, VaultORM.RelationsMode == RelationMode.id);
 		if(skipload && this.mode === RelationShipMode.belongsTo && VaultORM.RelationsMode == RelationMode.id)  {
 			return Promise.resolve({id: host[this.childKey]});
 		} else {
