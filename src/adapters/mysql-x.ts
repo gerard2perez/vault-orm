@@ -331,7 +331,10 @@ export class Collection<T extends VaultModel<uuid>> extends VaultCollection<T> {
 	protected execute() {
 		let query = toSQLQuery(this.__where__);
 		let find = this.collection.find(query);
-		find = find.limit(this.__limit__, this.__skip__);
+		find = find.limit(this.__limit__ || 1000);
+		if( this.__skip__) {
+			find = find.offset(this.__skip__);
+		}
 		return this.toArray(find);
 	}
 	limit(n: number) {
@@ -348,7 +351,7 @@ export class Collection<T extends VaultModel<uuid>> extends VaultCollection<T> {
 	count(applySkipLimit: boolean = false) {
 		let find = this.collection.find(toSQLQuery(this.__where__));
 		if (applySkipLimit) {
-			find = find.limit(this.__limit__, this.__skip__);
+			find = find.limit(this.__limit__ || 1000, this.__skip__);
 		}
 		this.__skip__ = 0;
 		this.__where__ = {};

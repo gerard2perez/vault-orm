@@ -136,7 +136,9 @@ export abstract class VaultModel<ID> extends IVaultModel {
 		for (const key of Object.keys(raw)) {
 			if (key === '_id') continue;
 			let value = this[key] || raw[key].defaults;
-			update_object[key] = value;
+			if(value) {
+				update_object[key] = value;
+			}
 		}
 		let hooks = VaultModel.storage.get(this).save_hooks.map(h => h());
 		let result = this.persist(Object.getPrototypeOf(this).collection(), update_object);
