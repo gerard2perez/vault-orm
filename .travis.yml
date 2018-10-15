@@ -1,0 +1,21 @@
+branches:
+  except:
+    - /^v\d+\.\d+\.\d+$/
+language: node_js
+node_js:
+  - "lts/*"
+  - "node"
+cache:
+  directories:
+    - node_modules
+before_install:
+  - npm config set spin false
+  - npm install -g codeclimate-test-reporter
+install:
+  - npm i .
+script:
+  - npm run cover
+  - codeclimate-test-reporter < coverage/lcov.info
+after_success:
+  - npx tsc --sourceMap false
+  - npx semantic-release

@@ -3,6 +3,7 @@ import { MongoClientOptions } from "mongodb";
 import { VaultCollection } from "./collection";
 import { VaultModel } from "./model";
 import { Database } from "./database";
+import { writeFileSync } from "fs";
 
 export class NotInmplemented extends Error {
 	constructor(msg:string = 'This method is not yet implemented.', ...args) {
@@ -53,15 +54,18 @@ export class VaultORM {
 			let collections = [];
 			let properties = Object.getOwnPropertyNames(Object.getPrototypeOf(this)).filter(p=>p!=='constructor');
 			let BaseClasses = {};
+			let METADATABASE = {};
 			for(const property of properties) {
 				this[property] = this[property](this.driver);
 				if(this[property] instanceof VaultCollection) {
 					BaseClasses[this[property].BaseClass.name] = this[property].BaseClass;
 					let attributes = Reflect.getMetadata(MODELATTRIBUTES, this[property].BaseClass);
+					METADATABASE[property] = attributes;
 					this[property].BaseClass.configuration = this[property].BaseClass.configuration || attributes;
 					collections.push(DBBuilder.register(this[property]));
 				}
 			}
+			writeFileSync(`./migrations/${configuration.database}.${this.driver}.json`, JSON.stringify(METADATABASE, null, 2));
 			for(const property of properties) {
 				if(this[property] instanceof VaultCollection) {
 					(this[property] as VaultCollection<VaultModel<any>>).setUpSchema(BaseClasses);

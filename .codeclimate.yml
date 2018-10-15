@@ -1,0 +1,23 @@
+version: "2"
+checks:
+    argument-count:
+        config:
+            threshold: 6
+    method-complexity:
+        config:
+            threshold: 25
+exclude_patterns:
+    - docs/
+    - .nyc_output/
+    - node_modules/
+    - src/spinner/animations.ts
+    - coverage/
+    - .vscode/
+    - single_repo/
+    - test/
+    - templates/
+    - ".*"
+    - "./**.json"
+    - "./*.js"
+    - "**/*.d.ts"
+    - "**.md"
