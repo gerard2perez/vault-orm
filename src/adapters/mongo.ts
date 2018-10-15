@@ -68,7 +68,7 @@ class MongoCollection<T extends VaultModel<ObjectId>> extends VaultCollection<T>
 		return (await this.collection.remove(query)).result.n === 1;
 	}
 	async update(query: FilterQuery<T>, keys?: Object) {
-		return (await this.collection.update(query, keys)).result;
+		return (await this.collection.update(query, {$set: keys})).result;
 	}
 	async findOrCreate(query: FilterQuery<T>, keys: Object = {}) {
 		let item = await this.collection.findOne(query);
