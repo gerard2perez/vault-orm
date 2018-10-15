@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { VaultModel } from '../src/model';
-import { ok } from 'assert';
-export function prepare (title:string, TestContext:any, Rol:any, Post:any) {
+import { Post } from './mongo/post';
+export function prepare (title:string, TestContext:any, Rol:any, Post:any, Comment) {
 	function rdn() {
 		return [3,5,1][Math.floor(Math.random()*3)];
 	}
@@ -12,7 +12,8 @@ export function prepare (title:string, TestContext:any, Rol:any, Post:any) {
 				TestContext.rols.remove({}),
 				TestContext.rigths.remove({}),
 				TestContext.users.remove({}),
-				TestContext.posts.remove({})
+				TestContext.posts.remove({}),
+				TestContext.comments.remove({})
 			]);
 		});
 		it('Appends Properties to Prototype', async() => {
@@ -156,6 +157,7 @@ export function prepare (title:string, TestContext:any, Rol:any, Post:any) {
 				user.posts.Add(post2);
 				expect(VaultModel.storage.get(user).save_hooks).to.have.lengthOf(2);
 				expect(await user.save(), 'save 4').eq(true);
+				expect(await TestContext.posts.findOne(post1.id)).to.have.property('title').equal('title1');
 				expect(await TestContext.posts.where({userId:user.id}).find(), 'two object match query').to.have.lengthOf(2);
 
 				user.posts.Remove(post1);
@@ -168,7 +170,20 @@ export function prepare (title:string, TestContext:any, Rol:any, Post:any) {
 				expect(await TestContext.posts.where({userId:user.id}).find(), 'Object remove in the table').to.have.lengthOf(0);
 				expect(await user.posts(), 'object remove from related array').to.have.lengthOf(0);
 			});
-			it('Paralel Queries', async () => {
+			it('Can create custom named foreign keys', async () => {
+				let user = await TestContext.users.findOrCreate({name: 'user1'});
+				let post = await TestContext.posts.findOrCreate({title: 'title1'});
+				let comment1 = new Comment({content: 'Comment 1'});
+				let comment2 = new Comment({content: 'Comment 2'});
+				await Promise.all([comment1.save(), comment2.save()]);
+				post.comments.Add(comment1);
+				post.comments.Add(comment2);
+				post.user(user);
+				await post.save();
+				expect(await TestContext.comments.where({commentRelationKey: post.id}).count()).to.be.equal(2);
+				expect(await TestContext.posts.where({myOwnerKey: user.id}).count()).to.be.equal(1);
+			});
+			it('Parallel Queries', async () => {
 				let res = await Promise.all([
 					TestContext.rols.skip(2).limit(1).count(true),
 					TestContext.rols.skip(8).limit(3).count(true)

@@ -3,17 +3,15 @@ import { Rigth } from './rigth';
 import { Rol } from './rol';
 import { User } from './user';
 import { Post } from './post';
+import { Comment } from './comment';
 
 VaultORM.RelationsMode = RelationMode.id;
 class TestContext extends VaultORM {
-	// @ts-ignore
 	@collection(Rigth) rigths: Collection<Rigth>
-	// @ts-ignore
 	@collection(Rol) rols: Collection<Rol>
-	// @ts-ignore
 	@collection(User) users: Collection<User>
-	// @ts-ignore
 	@collection(Post) posts: Collection<Post>
+	@collection(Comment) comments: Collection<Comment>
 }
 const Context =  new TestContext({
 	driver: DatabaseDriver.mongo,

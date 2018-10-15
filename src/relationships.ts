@@ -26,9 +26,11 @@ export class RelationSingle extends ExtensibleFunction {
 	}
 	init(key:string, sourceModel: VaultModel<any>, parentModel: VaultModel<any>) {
 		if(this.mode === RelationShipMode.hasOne) {
-			this.parentKey = key;
+			if(!this.parentKey)
+				this.parentKey = key;
 		} else {
-			this.childKey = key;
+			if(!this.childKey)
+				this.childKey = key;
 		}
 		this.sourceModel = sourceModel;
 		this.parentModel = parentModel;
@@ -102,7 +104,8 @@ export class HasManyRelation extends ExtensibleFunction {
 	}
 	init(key:string, sourceModel: VaultModel<any>, parentModel: VaultModel<any>) {
 		if(this.mode === RelationShipMode.hasMany) {
-			this.parentKey = this.parentKey || key;
+			if(!this.parentKey)
+				this.parentKey = this.parentKey || key;
 		}
 		this.sourceModel = sourceModel;
 		this.parentModel = parentModel;

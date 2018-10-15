@@ -32,14 +32,6 @@ export interface DatabaseConfiguration {
 	password?:string
 	ssl?:boolean
 }
-// export function makeString(defautls?:string) {
-// 	console.log(...arguments);
-// 	throw new Error();
-// 	// return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-// 	// 	console.log(target);
-// 	// 	throw new Error();
-//     // };
-// }
 export const MODELATTRIBUTES = 'vault-orm:design';
 export function collection(Model:any, collectionName?: string) {
 	return function (target: any, key: string) {
@@ -53,7 +45,6 @@ export function collection(Model:any, collectionName?: string) {
 		});
 	}
 }
-
 export class VaultORM {
 	public static RelationsMode: RelationMode = RelationMode.record
 	private database: any

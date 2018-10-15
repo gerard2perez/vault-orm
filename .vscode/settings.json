@@ -5,7 +5,9 @@
     "adapters": true,
     "**/*.js": true,
     "**/*.map": true,
-    "**/*.d.ts": true
+    "**/*.d.ts": true,
+    "coverage": true,
+    ".nyc_output": true
   },
   "typescript.tsdk": "node_modules\\typescript\\lib"
 }

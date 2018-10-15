@@ -99,18 +99,32 @@ export function Property(...args:any[]) : void | any {
 		extendModel(target, property, descriptor, args[0]);
 	};
 }
-export function HasOne(modelResolver:(o:any)=>any) {
+/**
+ *
+ * @param modelResolver - A function that return the target model
+ * @param foreingKey - A key to be created
+ *
+ * Appends the foreingKey to the target model
+ */
+export function HasOne(modelResolver:(o:any)=>any, foreingKey?:string) {
 	return (target: any, property: string, descriptor?: PropertyDescriptor) : void => {
-		extendModel(target, property, descriptor, hasOne(modelResolver));
+		extendModel(target, property, descriptor, hasOne(modelResolver, foreingKey));
 	}
 }
-export function BelongsTo(modelResolver:(o:any)=>any) {
+/**
+ *
+ * @param modelResolver - A function that return the target model
+ * @param foreingKey - A key to be created
+ *
+ * Appends the foreingKey to the current model
+ */
+export function BelongsTo(modelResolver:(o:any)=>any, foreingKey?:string) {
 	return (target: any, property: string, descriptor?: PropertyDescriptor) : void => {
-		extendModel(target, property, descriptor, belongsTo(modelResolver));
+		extendModel(target, property, descriptor, belongsTo(modelResolver, foreingKey));
 	}
 }
-export function HasMany(modelResolver:(o:any)=>any) {
+export function HasMany(modelResolver:(o:any)=>any, foreingKey?:string) {
 	return (target: any, property: string, descriptor?: PropertyDescriptor) : void => {
-		extendModel(target, property, descriptor, hasMany(modelResolver));
+		extendModel(target, property, descriptor, hasMany(modelResolver, foreingKey));
 	}
 }
