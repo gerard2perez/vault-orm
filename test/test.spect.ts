@@ -131,7 +131,6 @@ export function prepare (title:string, TestContext:any, Rol:any, Post:any, Comme
 
 				rol = await TestContext.rols.firstOrDefault();
 				expect(await rol.user()).to.have.property('id').to.be.deep.equal(user.id);
-				//@ts-ignore
 				expect(await rol.user(true)).to.have.all.keys(['id']);
 
 				rol.user(null);

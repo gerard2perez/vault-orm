@@ -19,12 +19,7 @@ export enum RelationMode {
 	id,
 	record
 }
-export enum DatabaseDriver {
-	mongo = 'mongo',
-	mysqlX = 'mysql-x'
-}
 export interface DatabaseConfiguration {
-	driver:DatabaseDriver
 	host:string
 	port:number
 	database:string
@@ -38,8 +33,8 @@ export function collection(Model:any, collectionName?: string) {
 		Object.defineProperty(target, key, {
 			configurable: true,
 			writable: true,
-			value: (driver:DatabaseDriver) => {
-				let collection =new (require(`./adapters/${driver.toString()}`)).Collection;
+			value: (driver:string) => {
+				let collection =new (require(`./adapters/${driver}`)).Collection;
 				return collection.Initialize(Model, collectionName);
 			}
 		});
@@ -48,17 +43,18 @@ export function collection(Model:any, collectionName?: string) {
 export class VaultORM {
 	public static RelationsMode: RelationMode = RelationMode.record
 	private database: any
+	protected driver:string
 	// @ts-ignore
 	ready():Promise<any>{return Promise.resolve(false);}
-	constructor(configuration: DatabaseConfiguration, driver_options?:MongoClientOptions | any) {
-		let DBBuilder:Database<any> = new (require(`./adapters/${configuration.driver.toString()}`)).DataBase(this, configuration, driver_options) as Database<any>;
+	after_constructor(configuration: DatabaseConfiguration, driver_options?:MongoClientOptions | any) {
+		let DBBuilder:Database<any> = new (require(`./adapters/${this.driver}`)).DataBase(this, configuration, driver_options) as Database<any>;
 		let ready:Promise<any> = new Promise( async resolve => {
 			this.database = await DBBuilder.ready;
 			let collections = [];
 			let properties = Object.getOwnPropertyNames(Object.getPrototypeOf(this)).filter(p=>p!=='constructor');
 			let BaseClasses = {};
 			for(const property of properties) {
-				this[property] = this[property](configuration.driver);
+				this[property] = this[property](this.driver);
 				if(this[property] instanceof VaultCollection) {
 					BaseClasses[this[property].BaseClass.name] = this[property].BaseClass;
 					let attributes = Reflect.getMetadata(MODELATTRIBUTES, this[property].BaseClass);

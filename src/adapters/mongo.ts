@@ -1,10 +1,12 @@
-import "reflect-metadata";
-export { VaultORM, collection, RelationMode, DatabaseDriver } from '../';
-import { MongoClientOptions, Db, Collection, MongoClient, ObjectId, FilterQuery, Cursor } from "mongodb";
+import { Cursor, Db, FilterQuery, MongoClient, MongoClientOptions, ObjectId } from "mongodb";
+import { basename } from "path";
+import { DatabaseConfiguration, Sorting } from '..';
 import { VaultCollection } from "../collection";
 import { Database } from "../database";
+import { VaultORM as VORM } from '../index';
 import { VaultModel } from "../model";
-import { DatabaseConfiguration, MODELATTRIBUTES, Sorting } from '..';
+export { collection, RelationMode } from '../';
+export { MongoCollection as Collection };
 export class DataBase implements Database<Db> {
 	database: Db
 	ready: Promise<Db>
@@ -243,4 +245,18 @@ class MongoCollection<T extends VaultModel<ObjectId>> extends VaultCollection<T>
 
 	}
 }
-export { MongoCollection as Collection };
+
+export class VaultORM extends VORM {
+	public static set RelationsMode (value) {
+		VORM.RelationsMode = value;
+	}
+	public static get RelationsMode () {
+		return VORM.RelationsMode;
+	}
+	driver: string = basename(__filename).split('.')[0]
+	constructor(configuration: DatabaseConfiguration, driver_options?:MongoClientOptions | any) {
+		super();
+		return this.after_constructor(configuration, driver_options);
+	}
+}
+

@@ -60,9 +60,7 @@ export class RelationSingle extends ExtensibleFunction {
 		if(skipload && this.mode === RelationShipMode.belongsTo && VaultORM.RelationsMode == RelationMode.id)  {
 			return Promise.resolve({id: host[this.childKey]});
 		} else {
-			// console.log({[this.parentKey]: host[this.childKey]});
 			return this.connection.findOne({[this.parentKey]: host[this.childKey]});
-			// return {id: `${this.connection.collectionName}.findOne({${this.parentKey}: '${host[this.childKey]}'}) [${host.constructor.name}]`};
 		}
 	}
 	getConnection(model:any) {

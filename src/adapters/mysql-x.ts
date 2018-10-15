@@ -1,11 +1,14 @@
-export { VaultORM, collection, RelationMode, DatabaseDriver } from '../index';
+export { collection, RelationMode } from '../index';
 import * as mysqlx from '@mysql/xdevapi';
+import { MongoClientOptions } from 'mongodb';
+import { basename } from 'path';
+import { isBoolean, isNumber } from 'util';
 import { DatabaseConfiguration } from '..';
 import { VaultCollection } from '../collection';
-import { VaultModel } from '../model';
 import { Database } from '../database';
+import { VaultORM as VORM } from '../index';
+import { VaultModel } from '../model';
 import { UUID, uuidv4 } from './uuid';
-import { isNumber, isBoolean } from 'util';
 interface Result {
 	getAffectedItemsCount(): number
 	getAffectedRowsCount(): number
@@ -367,3 +370,18 @@ export class Collection<T extends VaultModel<uuidv4>> extends VaultCollection<T>
 		return find.execute(count).then(() => count.count);
 	}
 }
+export class VaultORM extends VORM {
+	public static set RelationsMode (value) {
+		VORM.RelationsMode = value;
+	}
+	public static get RelationsMode () {
+		return VORM.RelationsMode;
+	}
+	driver: string = basename(__filename).split('.')[0]
+	constructor(configuration: DatabaseConfiguration, driver_options?:MongoClientOptions | any) {
+		super();
+		return this.after_constructor(configuration, driver_options);
+	}
+}
+
+

@@ -1,4 +1,4 @@
-import { Collection, VaultORM, collection, RelationMode, DatabaseDriver } from '../../src/adapters/mysql-x';
+import { Collection, VaultORM, collection, RelationMode } from '../../src/adapters/mysql-x';
 import { Rigth } from './rigth';
 import { Rol } from './rol';
 import { User } from './user';
@@ -13,7 +13,6 @@ class TestContext extends VaultORM {
 	@collection(Comment) comments: Collection<Comment>
 }
 const Context =  new TestContext({
-	driver: DatabaseDriver.mysqlX,
     database: 'test_vault_orm',
     port: 33060,
 	host: 'localhost',

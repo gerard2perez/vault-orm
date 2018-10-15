@@ -1,4 +1,4 @@
-import { Collection, VaultORM, collection, RelationMode, DatabaseDriver } from '../../src/adapters/mongo';
+import { Collection, VaultORM, collection, RelationMode } from '../../src/adapters/mongo';
 import { Rigth } from './rigth';
 import { Rol } from './rol';
 import { User } from './user';
@@ -14,7 +14,6 @@ class TestContext extends VaultORM {
 	@collection(Comment) comments: Collection<Comment>
 }
 const Context =  new TestContext({
-	driver: DatabaseDriver.mongo,
     database: 'test_vault_orm',
     port: 27017,
     host: 'localhost'
