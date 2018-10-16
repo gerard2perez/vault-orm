@@ -1,13 +1,12 @@
 {
   "files.exclude": {
     "node_modules": true,
-    "ember": true,
-    "adapters": true,
-    "**/*.js": true,
-    "**/*.map": true,
-    "**/*.d.ts": true,
+    "*.js": true,
+    "*.map": true,
+    "*.d.ts": true,
     "coverage": true,
-    ".nyc_output": true
-  },
-  "typescript.tsdk": "node_modules\\typescript\\lib"
+    ".nyc_output": true,
+    "migrations": true,
+    "adapters": true
+  }
 }

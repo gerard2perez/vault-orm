@@ -1,3 +1,6 @@
+/**
+ * @module @bitsun/vault-orm/database
+ */
 import { VaultCollection } from "./collection";
 
 export interface Database<T> {

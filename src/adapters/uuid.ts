@@ -1,3 +1,6 @@
+/**
+ * @module @bitsun/vault-orm/adapters/uuid
+ */
 import * as uuid from 'uuid/v4';
 import { type } from 'os';
 export interface UUIDOptions {

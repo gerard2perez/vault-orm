@@ -1,3 +1,6 @@
+/**
+ * @module @bitsun/vault-orm/relationships
+ */
 import { VaultORM, RelationMode } from ".";
 import { VaultCollection } from "./collection";
 import { VaultModel, IEntityState } from "./model";

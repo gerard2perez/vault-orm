@@ -1,3 +1,6 @@
+/**
+ * @module @bitsun/vault-orm/adapters/mysql-x
+ */
 export { collection, RelationMode } from '../index';
 import * as mysqlx from '@mysql/xdevapi';
 import { MongoClientOptions } from 'mongodb';

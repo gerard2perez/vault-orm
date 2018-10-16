@@ -10,3 +10,4 @@ resolvenextversion.js
 coverage
 .nyc_output
 migrations/
+docs

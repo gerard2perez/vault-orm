@@ -1,3 +1,6 @@
+/**
+ * @module @bitsun/vault-orm/adapters/mongo
+ */
 import { Cursor, Db, FilterQuery, MongoClient, MongoClientOptions, ObjectId } from "mongodb";
 import { basename } from "path";
 import { DatabaseConfiguration, Sorting } from '..';

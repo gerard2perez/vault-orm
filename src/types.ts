@@ -1,3 +1,6 @@
+/**
+ * @module @bitsun/vault-orm/types
+ */
 import "reflect-metadata";
 import { VaultModel, IVaultField } from "./model";
 import { RelationShipMode, RelationSingle, HasManyRelation } from "./relationships";

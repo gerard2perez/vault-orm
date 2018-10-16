@@ -1,25 +1,18 @@
 {
     "exclude": [
-        "**/cli.ts", 
-        "**/commands/new.ts",
-        "**/spinner/wcwidth/combining.ts",
-        "**/spinner/wcwidth/index.ts",
-        "**/spinner/wcwidth",
-        "**/spinner/animations.ts",
-        "**/spinner/strip-ansi.ts",
-        "**/spinner/symbols.ts",
-        "**/core/option.ts",
-        "**/core/argument.ts",
-        "**/core/help-renderer.ts",
-        "**/core/command.ts"
-
+      "**/collection.ts",
+      "**/database.ts",
+      "**/debug.ts",
+      "**/index.ts",
+      "**/model.ts",
+      "**/relationships.ts"
     ],
     "excludeExternals": false,
     "excludeNotExported": true,
     "excludePrivate": false,
     "hideGenerator": true,
     "includes": "./src",
-    "out": "docs",
+    "out": "./docs",
     "module": "commonjs",
     "mode": "modules"
   }

@@ -1,3 +1,6 @@
+/**
+ * @module @bitsun/vault-orm/model
+ */
 import { RelationSingle } from "./relationships";
 import { VaultORM, RelationMode, DatabaseConfiguration, NotInmplemented } from "./";
 import { inspect } from 'util';

@@ -1,3 +1,6 @@
+/**
+ * @module @bitsun/vault-orm/collection
+ */
 import { Collection, Cursor, FilterQuery, ObjectId } from "mongodb";
 import { VaultModel } from "./model";
 import * as inflector from 'inflection';

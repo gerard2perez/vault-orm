@@ -1,3 +1,6 @@
+/**
+ * @module @bitsun/vault-orm
+ */
 import "reflect-metadata";
 import { MongoClientOptions } from "mongodb";
 import { VaultCollection } from "./collection";
