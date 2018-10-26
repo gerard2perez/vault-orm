@@ -109,7 +109,7 @@ export class VaultCollection<T extends VaultModel<any>> {
 	update(query: FilterQuery<T>, keys?: Object):Promise<any> {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
-	 findOrCreate(query: FilterQuery<T>, keys: Object = {}):Promise<T> {
+	findOrCreate(query: FilterQuery<T>, keys: Partial<T> = {}):Promise<T> {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
 	findAll() : Promise<T[]> {

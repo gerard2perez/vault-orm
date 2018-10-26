@@ -59,10 +59,6 @@
       "src/**/*.ts"
     ],
     "exclude": [
-      "src/cli.ts",
-      "src/spinner/wcwidth/*",
-      "src/spinner/symbols.ts",
-      "src/spinner/strip-ansi.ts"
     ],
     "extension": [
       ".ts"

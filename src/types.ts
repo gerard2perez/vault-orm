@@ -81,8 +81,11 @@ function getType(type:any) {
 			return makeField('json');
 		case Date:
 			return makeField('date');
+		case Array:
+			return makeField('array');
 		default:
-			console.log(type, '------------------');
+			console.log(type, '------------------0');
+			console.log('rrr');
 			return void 0;
 	}
 }
