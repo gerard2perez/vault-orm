@@ -1,6 +1,6 @@
 {
   "name": "@bitsun/vault-orm",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "cross orm for node",
   "main": "index.js",
   "typings": "index.d.ts",
