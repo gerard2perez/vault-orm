@@ -199,13 +199,7 @@ class MongoCollection<T extends VaultModel<ObjectId>> extends VaultCollection<T>
 			cursor.count(this.__count__);
 		} else {
 			const execution_cursor = cursor;
-			return this.toArray(execution_cursor).finally(() => {
-				// this.cursor = null;
-				// this.__skip__ = undefined;
-				// this.__limit__ = undefined;
-				// this.__sort__ = undefined;
-				// this.__where__ = {};
-			});
+			return this.toArray(execution_cursor);
 		}
 	}
 	protected toArray(cursor: Cursor<T>) {
@@ -216,8 +210,6 @@ class MongoCollection<T extends VaultModel<ObjectId>> extends VaultCollection<T>
 			let item = await cursor.next();
 			while (item) {
 				let created = Reflect.construct(this.BaseClass, [item]) as T;
-				// // @ts-ignore
-				// await created.loadRelation();
 				results.push(created);
 				item = await cursor.next();
 			}
