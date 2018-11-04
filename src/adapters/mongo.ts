@@ -238,10 +238,7 @@ class MongoCollection<T extends VaultModel<ObjectId>> extends VaultCollection<T>
 			}
 
 		// }
-		return count.finally(() => {
-			// this.cursor = null;
-			// this.__where__ = {};
-		});
+		return count;
 
 	}
 }
