@@ -115,6 +115,9 @@ export class VaultCollection<T extends VaultModel<any>> {
 	findAll() : Promise<T[]> {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
+	toId(id:any): any {
+		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
+	}
 	where(query: FilterQuery<T> = {}): this {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}

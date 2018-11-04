@@ -74,7 +74,8 @@ class MongoCollection<T extends VaultModel<ObjectId>> extends VaultCollection<T>
 	}
 	async update(query: FilterQuery<T>, keys?: Partial<T>) {
 		keys.updated = new Date();
-		return (await this.collection.updateMany(query, {$set: keys})).result;
+		let {result: {n, nModified}} = await this.collection.updateMany(query, {$set: keys});
+		return n>= nModified && nModified > 0;
 	}
 	async findOrCreate(query: FilterQuery<T>, keys: Partial<T> = {}) {
 		let item = await this.firstOrDefault(query);
@@ -161,6 +162,10 @@ class MongoCollection<T extends VaultModel<ObjectId>> extends VaultCollection<T>
 		}
 		executionContext.limit(1);
 		return executionContext.execute().then(results => results[0]);
+	}
+	toId(id: any) {
+		if (typeof (id) === 'string' && id.length === 24) id = new ObjectId(id);
+		return id;
 	}
 	find() {
 		const { executionContext } = this;

@@ -334,6 +334,9 @@ export class Collection<T extends VaultModel<uuidv4>> extends VaultCollection<T>
 		this.__limit__ = 1;
 		return this.execute().then(results => results[0]);
 	}
+	toId(id: any) {
+		return id.replace(/-/gm,'');
+	}
 	protected execute() {
 		let query = toSQLQuery(this.__where__);
 		let find = this.collection.find(query);
