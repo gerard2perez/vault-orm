@@ -66,8 +66,8 @@ export interface Related<T> {
 }
 export interface List<T> {
 	():Promise<T[]>
-	Add(T):void
-	Remove(T):void
+	Add(entity:T):void
+	Remove(entity:T):void
 }
 function getType(type:any) {
 	switch(type) {

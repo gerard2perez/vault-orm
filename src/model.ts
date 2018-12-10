@@ -24,6 +24,7 @@ export class IVaultModel {
 	protected destroy(connection:any): Promise<boolean> { throw new NotInmplemented(); }
 }
 export abstract class VaultModel<ID> extends IVaultModel {
+	public isVaultORM: boolean = true
 	static storage: WeakMap<VaultModel<any>, any> = new WeakMap();
 	static configuration: IValultConfiguration
 	static collectionName?: string
@@ -85,25 +86,42 @@ export abstract class VaultModel<ID> extends IVaultModel {
 		}
 		return VaultModel.createProxy(un_proxy, OwnRelations, data);
 	}
-	async json(loaddep:boolean=true) {
+	async json(loaddep:boolean=true, avoid_recursive:any=null) {
 		let { mask, raw, own, relations } = Object.getPrototypeOf(this).newSchema;
+		if(avoid_recursive === null) {
+			avoid_recursive = relations;
+		}
 		let jsoned = {};
 		let dep_relations_name = [];
 		let dep_relations = [];
 		for (const property of Object.keys(mask)) {
+			if(property === 'isVaultORM')continue;
 			jsoned[property] = await this[property] || null;
 			if (jsoned[property] instanceof Function && loaddep) {
 				dep_relations_name.push(property);
 				dep_relations.push( jsoned[property](true).then(ijson=>{
-					if (ijson && ijson.json) {
+					function load(ijson) {
 						return ijson.json(false).then(ijson=>{
 							return !ijson ? null : (VaultORM.RelationsMode === RelationMode.id ? ( typeof ijson.id === 'object' ? ijson.id.toString() : ijson.id) : ijson);
 						});
 					}
-					return ijson || null;
+					if(ijson && ijson instanceof Array && ijson[0] && ijson[0].isVaultORM) {
+						return Promise.all(ijson.map(json=>load(json)));
+					} else if (ijson && ijson.isVaultORM) {
+						return load(ijson);
+					} else {
+						return ijson || null;
+					}
+					// if (ijson && ijson.json) {
+					// 	return ijson.json(false).then(ijson=>{
+					// 		return !ijson ? null : (VaultORM.RelationsMode === RelationMode.id ? ( typeof ijson.id === 'object' ? ijson.id.toString() : ijson.id) : ijson);
+					// 	});
+					// }
+					// return ijson || null;
 				}));
 			} else if (jsoned[property] instanceof Function) {
-				delete jsoned[property];
+				// delete jsoned[property];
+				jsoned[property] = (await jsoned[property](avoid_recursive !== relations)).id;
 			}
 			let dep_props = await Promise.all(dep_relations)
 			for(let i =0; i< dep_props.length; i ++) {
