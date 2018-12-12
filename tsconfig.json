@@ -11,8 +11,7 @@
     "lib":[
       "es2017",
       "es2018"
-    ],
-    "watch": true
+    ]
   },
   "include": [
     "src/**/*.ts"

@@ -1,12 +1,14 @@
 {
   "name": "@bitsun/vault-orm",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "cross orm for node",
   "main": "index.js",
   "typings": "index.d.ts",
   "scripts": {
     "doc": "typedoc --options .typedoc.json --navigation-label-externals \"Internal API\"",
-    "build": "tsc",
+    "prebuild": "npx tsc",
+    "build": "npx releasenext gemfury",
+    "postbuild": "git push",
     "gemfury": "releasenext gemfury",
     "version": "releasenext version",
     "test": "mocha test/*.test.ts --timeout 5000",
