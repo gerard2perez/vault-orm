@@ -106,11 +106,13 @@ export abstract class VaultModel<ID> extends IVaultModel {
 		for (const property of own_properties) {
 			this[property] = information[property] || undefined;
 		}
+		if(!(information instanceof VaultModel))
 		for(const relation of own_relations) {
 			if(information[relation]) {
 				if(relations[relation].mode === RelationShipMode.belongsTo || relations[relation].mode === RelationShipMode.hasOne) {
 					OwnRelations[relation] = collection.toId(information[relation].id ? information[relation].id:information[relation]);
 				} else if (relations[relation].mode === RelationShipMode.hasMany) {
+					console.log(information[relation]);
 					OwnRelations[relation] = information[relation].map(r=>collection.toId(r));
 				}
 
