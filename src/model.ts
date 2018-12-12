@@ -1,7 +1,7 @@
 /**
  * @module @bitsun/vault-orm/model
  */
-import { RelationSingle } from "./relationships";
+import { RelationSingle, RelationShipMode } from "./relationships";
 import { VaultORM, RelationMode, DatabaseConfiguration, NotInmplemented } from "./";
 import { inspect } from 'util';
 export interface IVaultField<T> {
@@ -40,7 +40,7 @@ export abstract class VaultModel<ID> extends IVaultModel {
 	created: Date
 	private static createProxy(un_proxy: any, OwnRelations: any, data: any) {
 		let { mask, raw, own, relations } = Object.getPrototypeOf(un_proxy).newSchema;
-		let proxied = new Proxy(un_proxy, {
+		let proxied:VaultModel<any> = new Proxy(un_proxy, {
 			get(target: any, property: any) {
 				if (Object.getOwnPropertyNames(relations).includes(property)) {
 					if (relations[property] instanceof RelationSingle) {
@@ -70,6 +70,20 @@ export abstract class VaultModel<ID> extends IVaultModel {
 			}
 		});
 		VaultModel.storage.set(proxied, data);
+		function make(id:any, model:any) {
+			let core = new model();
+			core._id = id;
+			return core;
+		}
+		for(const relation of Object.keys(OwnRelations)) {
+			if(OwnRelations[relation] instanceof Array) {
+				for(const rel of OwnRelations[relation]) {
+					proxied[relation].Add( make(rel, relations[relation].parentModel) );
+				}
+			} else {
+				proxied[relation]( make(OwnRelations[relation], relations[relation].sourceModel) );
+			}
+		}
 		return proxied;
 	}
 	constructor(information: any = {}) {
@@ -79,10 +93,28 @@ export abstract class VaultModel<ID> extends IVaultModel {
 			save_hooks: [],
 			state: IEntityState.unchanged
 		};
-		let own_properties = Object.keys(Object.getPrototypeOf(this).newSchema.raw);
+		const collection = Object.getPrototypeOf(this).vaultCollection();
+		let {raw, relations} = Object.getPrototypeOf(this).newSchema;
+		// let own_properties = Object.keys(Object.getPrototypeOf(this).newSchema.raw);
+		let own_properties = Object.keys(raw);
+		let own_relations = Object.keys(relations);
 		let OwnRelations = {};
+		if(information.id) {
+			information._id = collection.toId(information.id);
+			delete information.id;
+		}
 		for (const property of own_properties) {
 			this[property] = information[property] || undefined;
+		}
+		for(const relation of own_relations) {
+			if(information[relation]) {
+				if(relations[relation].mode === RelationShipMode.belongsTo || relations[relation].mode === RelationShipMode.hasOne) {
+					OwnRelations[relation] = collection.toId(information[relation].id ? information[relation].id:information[relation]);
+				} else if (relations[relation].mode === RelationShipMode.hasMany) {
+					OwnRelations[relation] = information[relation].map(r=>collection.toId(r));
+				}
+
+			}
 		}
 		return VaultModel.createProxy(un_proxy, OwnRelations, data);
 	}

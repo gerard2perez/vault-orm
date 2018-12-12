@@ -74,6 +74,25 @@ class MongoCollection<T extends VaultModel<ObjectId>> extends VaultCollection<T>
 	}
 	async update(query: FilterQuery<T>, keys?: Partial<T>) {
 		keys.updated = new Date();
+		let schema = Reflect.getMetadata('vault-orm:design', this.BaseClass);
+		let relations = Object.keys(schema).filter(key=>(typeof schema[key].kind==='function'));
+		let work = Object.keys(keys).filter(k=>relations.includes(k));
+		for(const prop of work) {
+			let {kind} = schema[prop];
+			switch (kind.mode) {
+				case 'belongsto':
+					throw new Error('Unimplemented');
+					break;
+				case 'hasmany':
+					keys[prop] = keys[prop].map(k=>this.toId(k));
+					let collection = kind.parentModel.prototype.vaultCollection();
+					await collection.update({_id:{$in:keys[prop]}}, {[kind.parentKey]: query[kind.childKey] });
+					delete keys[prop];
+					break;
+				default:
+					break;
+			}
+		}
 		let {result: {n, nModified}} = await this.collection.updateMany(query, {$set: keys});
 		return n>= nModified && nModified > 0;
 	}
