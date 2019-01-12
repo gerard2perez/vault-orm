@@ -1,7 +1,6 @@
 /**
  * @module @bitsun/vault-orm/collection
  */
-import { Collection, Cursor, FilterQuery, ObjectId } from "mongodb";
 import { VaultModel } from "./model";
 import * as inflector from 'inflection';
 import debug from "./debug";
@@ -23,13 +22,14 @@ export class VaultCollection<T extends VaultModel<any>> {
 		return this;
 	}
 	private cloned:boolean = false
-	collectionName?: string
-	protected collection: Collection<T>
+	protected collectionName?: string
+	protected collection: any
 	protected BaseClass: any
-	protected cursor: Cursor<T>
-	protected __where__: FilterQuery<T> = {}
+	protected cursor: any
+	protected __where__: any = {}
 	protected __projection__: Object
-	Initialize(classname: typeof VaultModel, colname?: string) {
+	protected Initialize(classname: typeof VaultModel, colname?: string) {
+		//@ts-ignore
 		this.collectionName = colname || classname.collectionName;
 		if (!this.collectionName) {
 			let name = inflector.pluralize(classname.name.toLowerCase());
@@ -48,6 +48,7 @@ export class VaultCollection<T extends VaultModel<any>> {
 		//@ts-ignore
 		classname.prototype.vaultCollection = () => this;
 		this.BaseClass = classname;
+		this.BaseClass.objects = this;
 		return this;
 	}
 	public setUpSchema(Schemas: any) {
@@ -94,22 +95,22 @@ export class VaultCollection<T extends VaultModel<any>> {
 			}
 		}
 	}
+	protected toArray(cursor: any): Promise<T[]> {
+		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
+	}
 	fields(query: object) : this {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
-	protected toArray(cursor: Cursor<T>): Promise<T[]> {
-		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
-	}
-	remove(query: FilterQuery<T>): Promise<any> {
+	remove(query: any): Promise<any> {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
 	sort(key:string, order:Sorting = Sorting.asc):this {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
-	update(query: FilterQuery<T>, keys?: Object):Promise<any> {
+	update(query: any, keys?: Object):Promise<any> {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
-	findOrCreate(query: FilterQuery<T>, keys: Partial<T> = {}):Promise<T> {
+	findOrCreate(query: any, keys: Partial<T> = {}):Promise<T> {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
 	findAll() : Promise<T[]> {
@@ -118,10 +119,10 @@ export class VaultCollection<T extends VaultModel<any>> {
 	toId(id:any): any {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
-	where(query: FilterQuery<T> = {}): this {
+	where(query: any = {}): this {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
-	orWhere(query: FilterQuery<T>): this {
+	orWhere(query: any): this {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
 	limit(n: number) : this {
@@ -138,23 +139,23 @@ export class VaultCollection<T extends VaultModel<any>> {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
 	findOne(): Promise<T>
-	findOne(Id: ObjectId): Promise<T>
+	findOne(Id: any): Promise<T>
 	/**
 	 * String that respresnents an ObjectId
 	 */
 	findOne(StringId: string): Promise<T>
-	findOne(query: FilterQuery<T>): Promise<T>
+	findOne(query: any): Promise<T>
 	/**@alias firstOrDefault */
 	findOne(queryOrId?: any):Promise<T> {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
 	firstOrDefault(): Promise<T>
-	firstOrDefault(Id: ObjectId): Promise<T>
+	firstOrDefault(Id: any): Promise<T>
 	/**
 	 * String that respresnents an ObjectId
 	 */
 	firstOrDefault(StringId: string): Promise<T>
-	firstOrDefault(query: FilterQuery<T>): Promise<T>
+	firstOrDefault(query: any): Promise<T>
 	firstOrDefault(queryOrId?: any) : Promise<T> {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
