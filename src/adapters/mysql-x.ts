@@ -250,6 +250,9 @@ export class Model extends VaultModel<uuidv4> {
 		return connection.removeOne(this._id).then(res => res.getAffectedRowsCount() === 1);
 	}
 }
+export class Repository extends Model {
+
+}
 export class Collection<T extends VaultModel<uuidv4>> extends VaultCollection<T> {
 	protected cursor: any
 	// @ts-ignore
