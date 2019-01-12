@@ -12,6 +12,7 @@ import { Database } from '../database';
 import { VaultORM as VORM } from '../index';
 import { VaultModel } from '../model';
 import { UUID, uuidv4 } from './uuid';
+import { FilterQuery, Projection } from '../query';
 interface Result {
 	getAffectedItemsCount(): number
 	getAffectedRowsCount(): number
@@ -63,6 +64,7 @@ export class DataBase implements Database<any> {
 		});
 	}
 	register(collection: VaultCollection<any>) {
+		//@ts-ignore
 		const collectionName = collection.collectionName || collection.constructor.name;
 		//@ts-ignore
 		let indexes = collection.BaseClass.configuration.__indexes__ || [];
@@ -206,6 +208,17 @@ function toSQLQuery (obj:any = {}):string {
 	final = (final || '').replace('(  )', '') || 'true';
 	return final;
 }
+function toSQLSelect(query: Projection<any> ) {
+	let fields:string[] = [];
+	if(query) {
+		for(const key  of Object.keys(query)) {
+			if(query[key]) {
+				fields.push(key);
+			}
+		}
+	}
+	return fields;
+}
 export class Model extends VaultModel<uuidv4> {
 	constructor(model:any) {
 		if(model.created && !(model.created instanceof Date))model.created = new Date(model.created);
@@ -259,10 +272,10 @@ export class Collection<T extends VaultModel<uuidv4>> extends VaultCollection<T>
 		}
 		return this;
 	}
-	// public fields(query: object) {
-	// 	this.__projection__ = query;
-	// 	return this;
-	// }
+	public fields(query: Projection<T>) {
+		this.__projection__ = query;
+		return this;
+	}
 	// async update(query: Partial<T>, keys?: Object) {
 	// 	return (await this.collection.update(query, keys)).result;
 	// }
@@ -281,7 +294,7 @@ export class Collection<T extends VaultModel<uuidv4>> extends VaultCollection<T>
 		});
 	}
 	async findOrCreate(query: Partial<T>, keys: Object={}) {
-		let item = await this.firstOrDefault((toSQLQuery(query)));
+		let item = await this.firstOrDefault(query);
 		if (!item) {
 			for (const key of Object.keys(keys)) {
 				query[key] = keys[key];
@@ -343,6 +356,11 @@ export class Collection<T extends VaultModel<uuidv4>> extends VaultCollection<T>
 		find = find.limit(this.__limit__ || 1000);
 		if( this.__skip__) {
 			find = find.offset(this.__skip__);
+		}
+		let fields = toSQLSelect(this.__projection__ as any);
+		if(fields.length) {
+			fields.splice(0,0,'_id');
+			find = find.fields(fields);
 		}
 		return this.toArray(find);
 	}
