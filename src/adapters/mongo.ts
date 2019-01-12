@@ -1,13 +1,14 @@
 /**
  * @module @bitsun/vault-orm/adapters/mongo
  */
-import { Cursor, Db, FilterQuery, MongoClient, MongoClientOptions, ObjectId } from "mongodb";
+import { Cursor, Db, MongoClient, MongoClientOptions, ObjectId, Collection } from "mongodb";
 import { basename } from "path";
 import { DatabaseConfiguration, Sorting } from '..';
 import { VaultCollection } from "../collection";
 import { Database } from "../database";
 import { VaultORM as VORM } from '../index';
 import { VaultModel } from "../model";
+import { Projection, FilterQuery } from "../query";
 export { collection, RelationMode } from '../';
 export { MongoCollection as Collection };
 export class DataBase implements Database<Db> {
@@ -21,6 +22,7 @@ export class DataBase implements Database<Db> {
 		});
 	}
 	register(collection: VaultCollection<any>) {
+		//@ts-ignore
 		const collectionName = collection.collectionName || collection.constructor.name;
 		//@ts-ignore
 		let indexes = collection.BaseClass.configuration.__indexes__ || [];
@@ -61,18 +63,53 @@ export class Model extends VaultModel<ObjectId> {
 	}
 }
 class MongoCollection<T extends VaultModel<ObjectId>> extends VaultCollection<T> {
+	protected collection:Collection<T>
 	protected __count__: boolean = false
 	protected __limit__: number = 0
 	protected __skip__: number = 0
 	protected __sort__: any[] = undefined
-	fields(query: object) {
-		this.__projection__ = query;
-		return this;
+	protected execute() {
+		let cursor;
+		// let cursor = this.collection.find(this.__where__);
+		let stages:any[] = [{ $match: this.__where__ }];
+		// if (this.count)
+		// if (this.__skip__) cursor = cursor.skip(this.__skip__);
+		// if (this.__limit__) cursor = cursor.limit(this.__limit__);
+		if (this.__sort__) {
+			stages.push({
+					$addFields: { _sort_: { $toLower: `$${this.__sort__[0]}` } }
+				});
+			stages.push({ $sort: { _sort_: this.__sort__[1] } });
+		}
+		if (this.__skip__) stages.push({ $skip: this.__skip__ });
+		if (this.__limit__) stages.push({ $limit: this.__limit__ });
+		if (this.__projection__) stages.push({ $project: this.__projection__ });
+		//@ts-ignore
+		return this.toArray(this.collection.aggregate(stages));
+	}
+	protected toArray(cursor: Cursor<T>) {
+		let rdn = Math.floor(Math.random() * 1000);
+		let id = `toArray${rdn}`;
+		let results: T[] = [];
+		return new Promise(async (resolve, reject) => {
+			let item = await cursor.next();
+			while (item) {
+				let created = Reflect.construct(this.BaseClass, [item]) as T;
+				results.push(created);
+				item = await cursor.next();
+			}
+			resolve(results);
+		}) as Promise<T[]>;
+	}
+	fields(query: Projection<T>) {
+		const { executionContext } = this;
+		executionContext.__projection__ = query;
+		return executionContext;
 	}
 	async remove(query: FilterQuery<T>) {
 		return (await this.collection.deleteMany(query)).result.n === 1;
 	}
-	async update(query: FilterQuery<T>, keys?: Partial<T>) {
+	async update(query: FilterQuery<T>, keys: Partial<T>) {
 		keys.updated = new Date();
 		let schema = Reflect.getMetadata('vault-orm:design', this.BaseClass);
 		let relations = Object.keys(schema).filter(key=>(typeof schema[key].kind==='function'));
@@ -197,48 +234,6 @@ class MongoCollection<T extends VaultModel<ObjectId>> extends VaultCollection<T>
 		this.cursor = null;
 		this.__where__ = {};
 		return execution_cursor.explain();
-	}
-	protected execute(count:boolean = false) {
-		let cursor = this.collection.find(this.__where__);
-		if (this.count)
-		if (this.__skip__) cursor = cursor.skip(this.__skip__);
-		if (this.__limit__) cursor = cursor.limit(this.__limit__);
-		if (this.__sort__) {
-			let stages: any[] = [
-				{
-					$addFields: {
-						_sort_: { $toLower: `$${this.__sort__[0]}` }
-					}
-				},
-				{ $match: this.__where__ },
-				{ $sort: { _sort_: this.__sort__[1] } },
-			];
-			if (this.__skip__) stages.push({ $skip: this.__skip__ });
-			if (this.__limit__) stages.push({ $limit: this.__limit__ });
-			if (this.__projection__) stages.push({ $project: this.__projection__ });
-			// @ts-ignore
-			cursor = this.collection.aggregate(stages);
-		}
-		if(count) {
-			cursor.count(this.__count__);
-		} else {
-			const execution_cursor = cursor;
-			return this.toArray(execution_cursor);
-		}
-	}
-	protected toArray(cursor: Cursor<T>) {
-		let rdn = Math.floor(Math.random() * 1000);
-		let id = `toArray${rdn}`;
-		let results: T[] = [];
-		return new Promise(async (resolve, reject) => {
-			let item = await cursor.next();
-			while (item) {
-				let created = Reflect.construct(this.BaseClass, [item]) as T;
-				results.push(created);
-				item = await cursor.next();
-			}
-			resolve(results);
-		}) as Promise<T[]>;
 	}
 	count(applySkipLimit: boolean = false) {
 		const { executionContext } = this;
