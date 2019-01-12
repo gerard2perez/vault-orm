@@ -44,10 +44,12 @@ export class RelationSingle extends ExtensibleFunction {
 		switch(this.mode) {
 			case RelationShipMode.belongsTo:
 				let id = target ? target.id : undefined;
+				// @ts-ignore
 				if (host[this.childKey] !== id)VaultModel.storage.get(host).state = IEntityState.modified;
 				host[this.childKey] = id;
 				break;
 			case RelationShipMode.hasOne:
+				// @ts-ignore
 				VaultModel.storage.get(host).save_hooks.push(()=>{
 					if(!target) {
 						return this.connection.update({[this.parentKey]: host[this.childKey]}, {[this.parentKey]: undefined});
@@ -88,6 +90,7 @@ export class HasManyRelation extends ExtensibleFunction {
 	}
 	Add(host:VaultModel<any>, target:VaultModel<any>){
 		if(target.id) {
+			// @ts-ignore
 			VaultModel.storage.get(host).save_hooks.push(()=>{
 				target[this.parentKey] = host.id;
 				return this.connection.update({_id: target.id}, {[this.parentKey]: host.id});
@@ -96,6 +99,7 @@ export class HasManyRelation extends ExtensibleFunction {
 	}
 	Remove(host:any, target:VaultModel<any>){
 		if(target.id) {
+			// @ts-ignore
 			VaultModel.storage.get(host).save_hooks.push(()=>{
 				// console.log(`${this.connection.collectionName}.update({_id:${target.id}},{${this.parentKey}: undefined})`);
 				target[this.parentKey] = host.id;
