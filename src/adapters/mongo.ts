@@ -204,15 +204,16 @@ class MongoCollection<T extends VaultModel<ObjectId>> extends VaultCollection<T>
 		return n>= nModified && nModified > 0;
 	}
 	async findOrCreate(query: FilterQuery<T>, keys: Partial<T> = {}) {
-		let item = await this.firstOrDefault(query);
+		const { executionContext } = this;
+		let item = await executionContext.firstOrDefault(query);
 		if (!item) {
 			for (const key of Object.keys(keys)) {
 				query[key] = keys[key];
 			}
-			item = Reflect.construct(this.BaseClass, [query]) as T;
+			item = Reflect.construct(executionContext.BaseClass, [query]) as T;
 			await item.save();
 		} else {
-			item = Reflect.construct(this.BaseClass, [item]);
+			item = Reflect.construct(executionContext.BaseClass, [item]);
 		}
 		return item;
 	}
