@@ -20,15 +20,73 @@ export enum IEntityState {
 	detached = <any>'detached',
 }
 export class IVaultModel {
+	protected static objects:any;
+	private static Warning(caller:any, func:string, ...args:any[]) {
+		console.warn('Method for this reposity is not implemented.')
+		return caller.objects[func](...args);
+		// throw new NotInmplemented('Method for this reposity is not implemented.');
+	}
+	static findOne(...args:any[]) {
+		return IVaultModel.Warning(this, 'findOne', ...args);
+	}
+	static firstOrDefault(...args:any[]) {
+		return IVaultModel.Warning(this, 'firstOrDefault', ...args);
+	}
+	static findOrCreate(...args:any[]) {
+		return IVaultModel.Warning(this, 'findOrCreate', ...args);
+	}
+	static find(...args:any[]) {
+		return IVaultModel.Warning(this, 'find', ...args);
+	}
+	static findAll(...args:any[]) {
+		return IVaultModel.Warning(this, 'findAll', ...args);
+	}
+	static remove(...args:any[]) {
+		return IVaultModel.Warning(this, 'remove', ...args);
+	}
+	static update(...args:any[]) {
+		return IVaultModel.Warning(this, 'update', ...args);
+	}
+	static count(...args:any[]) {
+		return IVaultModel.Warning(this, 'count', ...args);
+	}
+	static fields(...args:any[]) {
+		return IVaultModel.Warning(this, 'fields', ...args);
+	}
+	static where(...args:any[]) {
+		return IVaultModel.Warning(this, 'where', ...args);
+	}
+	static orWhere(...args:any[]) {
+		return IVaultModel.Warning(this, 'orWhere', ...args);
+	}
+	static limit(...args:any[]) {
+		return IVaultModel.Warning(this, 'limit', ...args);
+	}
+	static take(...args:any[]) {
+		return IVaultModel.Warning(this, 'take', ...args);
+	}
+	static sort(...args:any[]) {
+		return IVaultModel.Warning(this, 'sort', ...args);
+	}
+	static skip(...args:any[]) {
+		return IVaultModel.Warning(this, 'skip', ...args);
+	}
+
+	static toId(...args:any[]) {
+		return IVaultModel.Warning(this, 'toId', ...args);
+	}
+	static explain(...args:any[]) {
+		return IVaultModel.Warning(this, 'explain', ...args);
+	}
 	protected persist(connection:any, update_object:any): Promise<boolean> { throw new NotInmplemented(); }
 	protected destroy(connection:any): Promise<boolean> { throw new NotInmplemented(); }
 }
-export abstract class VaultModel<ID> extends IVaultModel {
+export class VaultModel<ID> extends IVaultModel {
 	public isVaultORM: boolean = true
-	static storage: WeakMap<VaultModel<any>, any> = new WeakMap();
-	static configuration: IValultConfiguration
-	static collectionName?: string
-	static schema?: any
+	protected static storage: WeakMap<VaultModel<any>, any> = new WeakMap();
+	protected static configuration: IValultConfiguration
+	protected static collectionName?: string
+	protected static schema?: any
 	/**
 	 * Read Only Please
 	 */
