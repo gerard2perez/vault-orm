@@ -237,7 +237,7 @@ export class VaultModel<ID> extends IVaultModel {
 		return `${this.constructor.name} ` + JSON.stringify(jsoned, null, 2);
 	}
 	protected inspect(...args) {
-		return this[inspect.custom](...args);
+		return this[inspect.custom](args[0]);
 	}
 	async save() {
 		// console.log(VaultModel.storage.get(this).save_hooks);
