@@ -24,7 +24,6 @@ before_install:
   - mysql -u root -e "CREATE DATABASE IF NOT EXISTS test_vault_orm;"
   - mysql -u root -e "INSTALL PLUGIN mysqlx SONAME 'mysqlx.so'"
   - mysql -u travis -e "show plugins"
-  - mysqlsh -u root -h localhost --classic --dba enableXProtocol
   - mysql -u root -e "GRANT ALL PRIVILEGES ON test_vault_orm.* TO 'travis'@'localhost';";
   - mysql -u root -e "show plugins"
   - mysql -u travis -e "show plugins"
