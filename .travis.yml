@@ -1,6 +1,9 @@
 branches:
   except:
     - /^v\d+\.\d+\.\d+$/
+services:
+  - mongodb
+  - mysql
 language: node_js
 node_js:
   - "lts/*"
