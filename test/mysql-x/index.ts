@@ -16,8 +16,7 @@ const Context =  new TestContext({
     database: 'test_vault_orm',
     port: 33060,
 	host: 'localhost',
-	user: 'root',
-	password: '5s%83kg78Op34%b5X@$!',
+	user: 'travis',
 	ssl:false
 });
 export { Context, Context as TestContext };
