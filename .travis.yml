@@ -25,10 +25,7 @@ before_install:
   - mysql -u root -e "INSTALL PLUGIN mysqlx SONAME 'mysqlx.so'"
   - sudo mysql_upgrade -u root
   - sudo service mysql restart
-  - mysql -u travis -e "show plugins"
   - mysql -u root -e "GRANT ALL PRIVILEGES ON test_vault_orm.* TO 'travis'@'localhost';";
-  - mysql -u root -e "show plugins"
-  - mysql -u travis -e "show plugins"
   - npm install -g codeclimate-test-reporter
 install:
   - npm i .

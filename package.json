@@ -6,11 +6,6 @@
   "typings": "index.d.ts",
   "scripts": {
     "doc": "typedoc --options .typedoc.json --navigation-label-externals \"Internal API\"",
-    "prebuild": "npx tsc",
-    "build": "npx releasenext gemfury",
-    "postbuild": "git push",
-    "gemfury": "releasenext gemfury",
-    "version": "releasenext version",
     "test": "mocha test/*.test.ts --timeout 5000",
     "test:live": "mocha test/*.test.ts --timeout 5000 --watch --watch-extensions ts",
     "cover": "nyc npm t"
