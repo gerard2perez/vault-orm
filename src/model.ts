@@ -4,21 +4,7 @@
 import { RelationSingle, RelationShipMode } from "./relationships";
 import { VaultORM, RelationMode, DatabaseConfiguration, NotInmplemented } from "./";
 import { inspect } from 'util';
-export interface IVaultField<T> {
-	kind: any
-	defaults?: T
-	unic?: boolean
-}
-export interface IValultConfiguration {
-	[p: string]: IVaultField<any>
-}
-export enum IEntityState {
-	created = <any>'created',
-	modified = <any>'modified',
-	unchanged = <any>'unchanged',
-	deleted = <any>'deleted',
-	detached = <any>'detached',
-}
+import { IValultConfiguration, IEntityState } from "./types";
 export class IVaultModel {
 	protected static objects:any;
 	// istanbul ignore next
@@ -117,36 +103,7 @@ export class VaultModel<ID> extends IVaultModel {
 	created: Date
 	private static createProxy(un_proxy: any, OwnRelations: any, data: any) {
 		let { mask, raw, own, relations } = Object.getPrototypeOf(un_proxy).newSchema;
-		let proxied:VaultModel<any> = new Proxy(un_proxy, {
-			get(target: any, property: any) {
-				if (Object.getOwnPropertyNames(relations).includes(property)) {
-					if (relations[property] instanceof RelationSingle) {
-						return (id) => {
-							return relations[property](proxied, id);
-						};
-					} else {
-						return relations[property](proxied);
-					}
-				} else {
-					if (target[property] && target[property]._id && target[property]._id._bsontype) {
-						throw new Error('MAMA');
-					}
-					return target[property];
-				}
-
-			},
-			set(target, property, value) {
-				if (relations[property] && relations[property] instanceof RelationSingle) {
-					return false;
-				} else if (raw[property]) {
-					target[property] = value;
-				} else {
-					// istanbul ignore next
-					throw new Error(`That property '${property.toString()}' does not exist in ${un_proxy.constructor.name}`);
-				}
-				return true;
-			}
-		});
+		let proxied:VaultModel<any> = VaultModel.getProxyObject(un_proxy, relations, raw);
 		VaultModel.storage.set(proxied, data);
 		function make(id:any, model:any) {
 			let core = new model();
@@ -173,7 +130,6 @@ export class VaultModel<ID> extends IVaultModel {
 		};
 		const collection = Object.getPrototypeOf(this).vaultCollection();
 		let {raw, relations} = Object.getPrototypeOf(this).newSchema;
-		// let own_properties = Object.keys(Object.getPrototypeOf(this).newSchema.raw);
 		let own_properties = Object.keys(raw);
 		let own_relations = Object.keys(relations);
 		let OwnRelations = {};
@@ -197,6 +153,44 @@ export class VaultModel<ID> extends IVaultModel {
 		}
 		return VaultModel.createProxy(un_proxy, OwnRelations, data);
 	}
+	private static getProxyObject(un_proxy: any, relations: any, raw: any): VaultModel<any> {
+		let proxied;
+		proxied = new Proxy(un_proxy, {
+			get(target: any, property: any) {
+				if (Object.getOwnPropertyNames(relations).includes(property)) {
+					if (relations[property] instanceof RelationSingle) {
+						return (id) => {
+							return relations[property](proxied, id);
+						};
+					}
+					else {
+						return relations[property](proxied);
+					}
+				}
+				else {
+					if (target[property] && target[property]._id && target[property]._id._bsontype) {
+						throw new Error('MAMA');
+					}
+					return target[property];
+				}
+			},
+			set(target, property, value) {
+				if (relations[property] && relations[property] instanceof RelationSingle) {
+					return false;
+				}
+				else if (raw[property]) {
+					target[property] = value;
+				}
+				else {
+					// istanbul ignore next
+					throw new Error(`That property '${property.toString()}' does not exist in ${un_proxy.constructor.name}`);
+				}
+				return true;
+			}
+		});
+		return proxied;
+	}
+
 	async json(loaddep:boolean=true, avoid_recursive:any=null) {
 		let { mask, raw, own, relations } = Object.getPrototypeOf(this).newSchema;
 		if(avoid_recursive === null) {
@@ -223,15 +217,8 @@ export class VaultModel<ID> extends IVaultModel {
 					} else {
 						return ijson || null;
 					}
-					// if (ijson && ijson.json) {
-					// 	return ijson.json(false).then(ijson=>{
-					// 		return !ijson ? null : (VaultORM.RelationsMode === RelationMode.id ? ( typeof ijson.id === 'object' ? ijson.id.toString() : ijson.id) : ijson);
-					// 	});
-					// }
-					// return ijson || null;
 				}));
 			} else if (jsoned[property] instanceof Function) {
-				// delete jsoned[property];
 				jsoned[property] = (await jsoned[property](avoid_recursive !== relations)).id;
 			}
 			let dep_props = await Promise.all(dep_relations)
@@ -262,8 +249,6 @@ export class VaultModel<ID> extends IVaultModel {
 		return this[inspect.custom](args[0]);
 	}
 	async save() {
-		// console.log(VaultModel.storage.get(this).save_hooks);
-		// if ( VaultModel.storage.get(this).state === IEntityState.unchanged )return false;
 		let { mask, raw, own, relations } = Object.getPrototypeOf(this).newSchema;
 		if (!this.updated) this.created = new Date();
 		this.updated = new Date();

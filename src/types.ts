@@ -2,7 +2,7 @@
  * @module @bitsun/vault-orm/types
  */
 import "reflect-metadata";
-import { VaultModel, IVaultField } from "./model";
+import { VaultModel } from "./model";
 import { RelationShipMode, RelationSingle, HasManyRelation, ExtensibleFunction } from "./relationships";
 import { MODELATTRIBUTES } from ".";
 type retmodel = (o:any) => any;
@@ -129,4 +129,19 @@ export function HasMany(modelResolver:(o:any)=>any, foreingKey?:string) {
 	return (target: any, property: string, descriptor?: PropertyDescriptor) : void => {
 		extendModel(target, property, descriptor, hasMany(modelResolver, foreingKey));
 	}
+}
+export interface IVaultField<T> {
+	kind: any
+	defaults?: T
+	unic?: boolean
+}
+export interface IValultConfiguration {
+	[p: string]: IVaultField<any>
+}
+export enum IEntityState {
+	created = <any>'created',
+	modified = <any>'modified',
+	unchanged = <any>'unchanged',
+	deleted = <any>'deleted',
+	detached = <any>'detached',
 }

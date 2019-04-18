@@ -1,10 +1,11 @@
 /**
  * @module @bitsun/vault-orm/relationships
  */
-import { VaultORM, RelationMode } from ".";
-import { VaultCollection } from "./collection";
-import { VaultModel, IEntityState } from "./model";
 import { isBoolean } from "util";
+import { RelationMode, VaultORM } from ".";
+import { VaultCollection } from "./collection";
+import { VaultModel } from "./model";
+import { IEntityState } from "./types";
 export enum RelationShipMode {
 	hasMany = 'hasmany',
 	hasOne = 'hasone',
