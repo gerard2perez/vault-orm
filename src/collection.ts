@@ -57,14 +57,16 @@ export class VaultCollection<T extends VaultModel<any>> {
 		let { mask, raw, own, relations } = classname.prototype.newSchema;
 		for (const prop of Object.keys(classname.configuration)) {
 			let property = classname.configuration[prop];
-			if (property.kind instanceof RelationSingle) {
-				let model;
+			let model;
+			if(property.kind instanceof RelationSingle || property.kind instanceof HasManyRelation) {
 				// istanbul ignore else
 				if ( property.kind.parentModel instanceof Function) {
 					model = property.kind.parentModel();
 				} else {
 					model = Schemas[property.kind.parentModel];
 				}
+			}
+			if (property.kind instanceof RelationSingle) {
 				if (property.kind.mode === RelationShipMode.belongsTo) {
 					let rprop: RelationSingle = property.kind.init(`${prop.toLowerCase()}Id`, model, null) as RelationSingle;
 					raw[rprop.childKey] = rprop;
@@ -77,13 +79,6 @@ export class VaultCollection<T extends VaultModel<any>> {
 				}
 				relations[prop] = mask[prop];
 			} else if (property.kind instanceof HasManyRelation) {
-				let model;
-				// istanbul ignore else
-				if ( property.kind.parentModel instanceof Function) {
-					model = property.kind.parentModel();
-				} else {
-					model = Schemas[property.kind.parentModel];
-				}
 				let rprop: RelationSingle = property.kind.init(`${classname.name.toLowerCase()}Id`, null, model) as RelationSingle;
 				let proto = model.prototype;
 				proto.newSchema.raw[rprop.parentKey] = rprop;

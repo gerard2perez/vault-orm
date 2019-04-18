@@ -5,7 +5,14 @@ checks:
             threshold: 6
     method-complexity:
         config:
-            threshold: 40
+            threshold: 25
+	method-count:
+		config:
+			threshold: 30
+	method-lines:
+    	config:
+			threshold: 40
+
 exclude_patterns:
     - docs/
     - .nyc_output/
