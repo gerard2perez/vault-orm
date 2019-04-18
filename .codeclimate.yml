@@ -1,4 +1,4 @@
-version: "2"
+version: '2'
 checks:
     argument-count:
         config:
@@ -6,13 +6,12 @@ checks:
     method-complexity:
         config:
             threshold: 25
-	method-count:
-		config:
-			threshold: 30
-	method-lines:
-    	config:
-			threshold: 40
-
+    method-count:
+        config:
+            threshold: 30
+    method-lines:
+        config:
+            threshold: 40
 exclude_patterns:
     - docs/
     - .nyc_output/
@@ -23,8 +22,8 @@ exclude_patterns:
     - single_repo/
     - test/
     - templates/
-    - ".*"
-    - "./**.json"
-    - "./*.js"
-    - "**/*.d.ts"
-    - "**.md"
+    - '.*'
+    - './**.json'
+    - './*.js'
+    - '**/*.d.ts'
+    - '**.md'
