@@ -82,7 +82,6 @@ function extendModel(target:any, property:string, descriptor:PropertyDescriptor,
 	let attributes = Reflect.getMetadata(MODELATTRIBUTES, target.constructor) || {};
 	let type = Reflect.getMetadata("design:type", target, property);
 	attributes[property] = Object.assign({}, getType(type), options);
-	console.log(attributes[property]);
 	Reflect.defineMetadata(MODELATTRIBUTES, attributes, target.constructor);
 }
 export interface IProperty<T=any> {

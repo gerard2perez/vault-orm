@@ -131,6 +131,7 @@ export function prepare (title:string, TestContext:any, Rol:typeof rol, Post:any
 		it('belongsTo', async () => {
 			let user = await TestContext.users.findOrCreate({name:'user1'});
 			expect(user).to.have.property('name').equals('user1');
+			expect(user).to.have.property('age').equals(25);
 			let rol = await TestContext.rols.firstOrDefault();
 			expect(await rol.user()).to.equals(undefined, 'relation bT is empty');
 			// @ts-ignore

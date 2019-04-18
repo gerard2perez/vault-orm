@@ -190,7 +190,6 @@ export class VaultModel<ID> extends IVaultModel {
 				if(relations[relation].mode === RelationShipMode.belongsTo || relations[relation].mode === RelationShipMode.hasOne) {
 					OwnRelations[relation] = collection.toId(information[relation].id ? information[relation].id:information[relation]);
 				} else if (relations[relation].mode === RelationShipMode.hasMany) {
-					console.log(information[relation]);
 					OwnRelations[relation] = information[relation].map(r=>collection.toId(r));
 				}
 
@@ -280,8 +279,11 @@ export class VaultModel<ID> extends IVaultModel {
 		let result = this.persist(Object.getPrototypeOf(this).collection(), update_object);
 		return Promise.all([result, ...hooks]).then(r => {
 			VaultModel.storage.get(this).save_hooks = [];
-			if(r[0])
-				this._id = r[0];
+			if(r[0])this._id = r[0];
+			for (const key of Object.keys(update_object)) {
+				if (['_id', 'updated', 'created'].includes(key)) continue;
+				this[key] = update_object[key];
+			}
 			return 	!!this._id;
 		});
 	}

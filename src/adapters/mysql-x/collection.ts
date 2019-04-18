@@ -139,8 +139,6 @@ export class MySQLXCollection<T extends VaultModel<uuidv4>> extends VaultCollect
 	sort(key: string, order: Sorting = Sorting.asc) {
 		const { executionContext } = this;
 		executionContext.__sort__.push(`${key} ${Sorting[order]}`);
-		console.log(executionContext.__sort__)
-		// executionContext.__sort__ = [key, order];
 		return executionContext;
 	}
 	limit(n: number) {
