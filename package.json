@@ -1,5 +1,8 @@
 {
   "name": "@gerard2p/vault-orm",
+  "publishConfig": {
+    "access": "public"
+  },
   "version": "0.4.0",
   "description": "cross orm for node",
   "main": "index.js",
