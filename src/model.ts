@@ -95,7 +95,9 @@ export class IVaultModel {
 	static explain(...args:any[]) {
 		return IVaultModel.Warning(this, 'explain', ...args);
 	}
+	// istanbul ignore next
 	protected persist(connection:any, update_object:any): Promise<boolean> { throw new NotInmplemented(); }
+	// istanbul ignore next
 	protected destroy(connection:any): Promise<boolean> { throw new NotInmplemented(); }
 }
 export class VaultModel<ID> extends IVaultModel {
@@ -162,7 +164,7 @@ export class VaultModel<ID> extends IVaultModel {
 		}
 		return proxied;
 	}
-	constructor(information: any = {}) {
+	constructor(information: any) {
 		super();
 		let un_proxy = this;
 		let data = {

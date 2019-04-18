@@ -52,7 +52,7 @@ export class VaultORM {
 	// @ts-ignore
 	ready():Promise<any>{return Promise.resolve(false);}
 	after_constructor(configuration: DatabaseConfiguration, driver_options?:MongoClientOptions | any) {
-		let DBBuilder:Database<any> = new (require(`./adapters/${this.driver}`)).DataBase(this, configuration, driver_options) as Database<any>;
+		let DBBuilder:Database<any> = new (require(`./adapters/${this.driver}/database`)).DataBase(this, configuration, driver_options) as Database<any>;
 		let ready:Promise<any> = new Promise( async resolve => {
 			this.database = await DBBuilder.ready;
 			let collections = [];
