@@ -3,7 +3,7 @@
  */
 import "reflect-metadata";
 import { VaultModel, IVaultField } from "./model";
-import { RelationShipMode, RelationSingle, HasManyRelation } from "./relationships";
+import { RelationShipMode, RelationSingle, HasManyRelation, ExtensibleFunction } from "./relationships";
 import { MODELATTRIBUTES } from ".";
 type retmodel = (o:any) => any;
 type model = string | retmodel;
@@ -32,23 +32,8 @@ function belongsTo(model:model, relation?:string) : IVaultField<Related<VaultMod
 		defaults: undefined
 	}
 }
-export interface IIField<T> {
-	() : IVaultField<T>;
-	(defaults:T) : IVaultField<T>;
-	(unic:boolean, defaults?:T) : IVaultField<T>;
-}
-function makeField<T>(kind:string):IVaultField<T>
-function makeField<T>(kind:string, unic:boolean):IVaultField<T>
-function makeField<T>(kind:string, defaults:T):IVaultField<T>
-function makeField<T>(kind:string, unic:boolean, defaults:T):IVaultField<T>
-function makeField<T>(...args:any[]) {
-	let [kind, unic, defaults] = args;
-	if(unic !==undefined && typeof unic !== 'boolean' ) {
-		defaults = unic;
-		unic = false;
-	}
-	unic = unic || false;
-	return { kind, unic, defaults };
+function makeField(kind:string) {
+	return { kind };
 }
 export interface Related<T> {
 	/**
@@ -69,7 +54,7 @@ export interface List<T> {
 	Add(entity:T):void
 	Remove(entity:T):void
 }
-function getType(type:any) {
+function getType(type:any):IProperty {
 	switch(type) {
 		case String:
 			return makeField('string');
@@ -78,7 +63,11 @@ function getType(type:any) {
 		case Boolean:
 			return makeField('boolean');
 		case Object:
-			return makeField('json');
+			if(type instanceof ExtensibleFunction	) {
+				return undefined;
+			} else {
+				return makeField('json');
+			}
 		case Date:
 			return makeField('date');
 		case Array:
@@ -89,20 +78,28 @@ function getType(type:any) {
 			return void 0;
 	}
 }
-function extendModel(target:any, property:string, descriptor:PropertyDescriptor, options?:any) {
+function extendModel(target:any, property:string, descriptor:PropertyDescriptor, options:IProperty={}) {
 	let attributes = Reflect.getMetadata(MODELATTRIBUTES, target.constructor) || {};
 	let type = Reflect.getMetadata("design:type", target, property);
-	attributes[property] = options || getType(type);
+	attributes[property] = Object.assign({}, getType(type), options);
+	console.log(attributes[property]);
 	Reflect.defineMetadata(MODELATTRIBUTES, attributes, target.constructor);
 }
-export function Property(...args:any[]) : void | any {
+export interface IProperty<T=any> {
+	kind?:string;
+	unic?:boolean;
+	defaults?:T;
+}
+export function Property(target: any, propertyName: string, propertyDescriptor?: PropertyDescriptor):void;
+export function Property(propety:IProperty) : (target: any, propertyName: string, propertyDescriptor?: PropertyDescriptor) => void;
+export function Property(...args:any[]) : any {
 	let [target, property, descriptor] = args;
 	if (args.length>=2 && target instanceof Object && typeof property === 'string' && (descriptor === undefined || descriptor instanceof Object)) {
 		extendModel(target, property, descriptor);
 		return;
 	}
 	return (target: any, propertyName: string, propertyDescriptor?: PropertyDescriptor) : void => {
-		extendModel(target, property, descriptor, args[0]);
+		extendModel(target, propertyName, propertyDescriptor, args[0] as IProperty);
 	};
 }
 /**
