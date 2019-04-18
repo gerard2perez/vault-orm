@@ -59,6 +59,7 @@ export class VaultCollection<T extends VaultModel<any>> {
 			let property = classname.configuration[prop];
 			if (property.kind instanceof RelationSingle) {
 				let model;
+				// istanbul ignore else
 				if ( property.kind.parentModel instanceof Function) {
 					model = property.kind.parentModel();
 				} else {
@@ -77,7 +78,7 @@ export class VaultCollection<T extends VaultModel<any>> {
 				relations[prop] = mask[prop];
 			} else if (property.kind instanceof HasManyRelation) {
 				let model;
-				//  = Schemas[property.kind.parentModel];
+				// istanbul ignore else
 				if ( property.kind.parentModel instanceof Function) {
 					model = property.kind.parentModel();
 				} else {
@@ -89,42 +90,54 @@ export class VaultCollection<T extends VaultModel<any>> {
 				mask[prop] = rprop;
 				relations[prop] = mask[prop];
 			} else {
+				// istanbul ignore else
 				if (!raw[prop]) raw[prop] = property;
 				mask[prop] = property;
 				own[prop] = property;
 			}
 		}
 	}
+	// istanbul ignore next
 	protected toArray(cursor: any): Promise<T[]> {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
+	// istanbul ignore next
 	fields(query: object) : this {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
+	// istanbul ignore next
 	remove(query: any): Promise<any> {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
+	// istanbul ignore next
 	sort(key:string, order:Sorting = Sorting.asc):this {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
+	// istanbul ignore next
 	update(query: any, keys?: Object):Promise<any> {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
+	// istanbul ignore next
 	findOrCreate(query: any, keys: Partial<T> = {}):Promise<T> {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
+	// istanbul ignore next
 	findAll() : Promise<T[]> {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
+	// istanbul ignore next
 	toId(id:any): any {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
+	// istanbul ignore next
 	where(query: any = {}): this {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
+	// istanbul ignore next
 	orWhere(query: any): this {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
+	// istanbul ignore next
 	limit(n: number) : this {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
@@ -135,6 +148,7 @@ export class VaultCollection<T extends VaultModel<any>> {
 	take(n: number) {
 		return this.limit(n);
 	}
+	// istanbul ignore next
 	skip(n: number): this {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
@@ -146,6 +160,7 @@ export class VaultCollection<T extends VaultModel<any>> {
 	findOne(StringId: string): Promise<T>
 	findOne(query: any): Promise<T>
 	/**@alias firstOrDefault */
+	// istanbul ignore next
 	findOne(queryOrId?: any):Promise<T> {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
@@ -156,18 +171,23 @@ export class VaultCollection<T extends VaultModel<any>> {
 	 */
 	firstOrDefault(StringId: string): Promise<T>
 	firstOrDefault(query: any): Promise<T>
+	// istanbul ignore next
 	firstOrDefault(queryOrId?: any) : Promise<T> {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
+	// istanbul ignore next
 	find() : Promise<T[]> {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
+	// istanbul ignore next
 	explain():Promise<any> {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
+	// istanbul ignore next
 	protected execute(query: any):Promise<T[]> {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
+	// istanbul ignore next
 	count(applySkipLimit: boolean = false): Promise<number> {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}

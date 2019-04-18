@@ -21,60 +21,77 @@ export enum IEntityState {
 }
 export class IVaultModel {
 	protected static objects:any;
+	// istanbul ignore next
 	private static Warning(caller:any, func:string, ...args:any[]) {
 		console.warn('Method for this reposity is not implemented.')
 		return caller.objects[func](...args);
 		// throw new NotInmplemented('Method for this reposity is not implemented.');
 	}
+	// istanbul ignore next
 	static findOne(...args:any[]) {
 		return IVaultModel.Warning(this, 'findOne', ...args);
 	}
+	// istanbul ignore next
 	static firstOrDefault(...args:any[]) {
 		return IVaultModel.Warning(this, 'firstOrDefault', ...args);
 	}
+	// istanbul ignore next
 	static findOrCreate(...args:any[]) {
 		return IVaultModel.Warning(this, 'findOrCreate', ...args);
 	}
+	// istanbul ignore next
 	static find(...args:any[]) {
 		return IVaultModel.Warning(this, 'find', ...args);
 	}
+	// istanbul ignore next
 	static findAll(...args:any[]) {
 		return IVaultModel.Warning(this, 'findAll', ...args);
 	}
+	// istanbul ignore next
 	static remove(...args:any[]) {
 		return IVaultModel.Warning(this, 'remove', ...args);
 	}
+	// istanbul ignore next
 	static update(...args:any[]) {
 		return IVaultModel.Warning(this, 'update', ...args);
 	}
+	// istanbul ignore next
 	static count(...args:any[]) {
 		return IVaultModel.Warning(this, 'count', ...args);
 	}
+	// istanbul ignore next
 	static fields(...args:any[]) {
 		return IVaultModel.Warning(this, 'fields', ...args);
 	}
+	// istanbul ignore next
 	static where(...args:any[]) {
 		return IVaultModel.Warning(this, 'where', ...args);
 	}
+	// istanbul ignore next
 	static orWhere(...args:any[]) {
 		return IVaultModel.Warning(this, 'orWhere', ...args);
 	}
+	// istanbul ignore next
 	static limit(...args:any[]) {
 		return IVaultModel.Warning(this, 'limit', ...args);
 	}
+	// istanbul ignore next
 	static take(...args:any[]) {
 		return IVaultModel.Warning(this, 'take', ...args);
 	}
+	// istanbul ignore next
 	static sort(...args:any[]) {
 		return IVaultModel.Warning(this, 'sort', ...args);
 	}
+	// istanbul ignore next
 	static skip(...args:any[]) {
 		return IVaultModel.Warning(this, 'skip', ...args);
 	}
-
+	// istanbul ignore next
 	static toId(...args:any[]) {
 		return IVaultModel.Warning(this, 'toId', ...args);
 	}
+	// istanbul ignore next
 	static explain(...args:any[]) {
 		return IVaultModel.Warning(this, 'explain', ...args);
 	}
@@ -122,6 +139,7 @@ export class VaultModel<ID> extends IVaultModel {
 				} else if (raw[property]) {
 					target[property] = value;
 				} else {
+					// istanbul ignore next
 					throw new Error(`That property '${property.toString()}' does not exist in ${un_proxy.constructor.name}`);
 				}
 				return true;
@@ -224,9 +242,11 @@ export class VaultModel<ID> extends IVaultModel {
 		}
 		return jsoned;
 	}
+	// istanbul ignore next
 	protected toJSON() {
 		throw new Error('You must first convert the object to json object using .json(), please note this is an async function');
 	}
+	// istanbul ignore next
 	[inspect.custom](depth) {
 		let Schema = Object.getPrototypeOf(this).newSchema.mask;
 		let own_properties = Object.keys(Schema);
@@ -236,6 +256,7 @@ export class VaultModel<ID> extends IVaultModel {
 		}
 		return `${this.constructor.name} ` + JSON.stringify(jsoned, null, 2);
 	}
+	// istanbul ignore next
 	protected inspect(...args) {
 		return this[inspect.custom](args[0]);
 	}

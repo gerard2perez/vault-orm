@@ -28,9 +28,11 @@ export class DataBase implements Database<Db> {
 		let indexes = collection.BaseClass.configuration.__indexes__ || [];
 		return new Promise((resolve, reject) => {
 			this.database.createCollection(collectionName, async function (err, col) {
+				// istanbul ignore next
 				if (err) reject(err);
 				// @ts-ignore
 				collection.collection = col;
+				// istanbul ignore next
 				for (const index of indexes) {
 					await col.createIndex(index);
 				}
@@ -50,6 +52,7 @@ export class Model extends VaultModel<ObjectId> {
 			});
 		} else {
 			return connection.findOneAndUpdate({ _id: this.id }, {$set: update_object}).then(error => {
+				// istanbul ignore next
 				if (!error.lastErrorObject.updatedExisting) {
 					console.error(error, { _id: this.id }, update_object);
 					throw new Error(error.lastErrorObject);

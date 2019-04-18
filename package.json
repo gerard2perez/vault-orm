@@ -53,10 +53,10 @@
     "typescript": "^3.4.3"
   },
   "nyc": {
-    "lines": 99,
-    "statements": 99,
-    "functions": 99,
-    "branches": 99,
+    "lines": 80,
+    "statements": 80,
+    "functions": 80,
+    "branches": 60,
     "reporter": [
       "lcov",
       "text"
