@@ -2,35 +2,7 @@ import { isBoolean, isNumber } from 'util';
 import { Projection } from '../../query';
 import { uuidv4 } from '../uuid';
 function toQuery(obj: any = {}) {
-	let {
-		$and,
-		$or,
-		$eq,
-		$gt,
-		$gte,
-		$in,
-		$lt,
-		$lte,
-		$ne,
-		$nin,
-		$not,
-		$expr,
-		$jsonSchema,
-		$mod,
-		$regex,
-		$options,
-		$text,
-		$geoIntersects,
-		$geoWithin,
-		$near,
-		$nearSphere,
-		$elemMatch,
-		$size,
-		$bitsAllClear,
-		$bitsAllSet,
-		$bitsAnyClear,
-		$bitsAnySet
-	} = obj;
+	let { $and, $or, $eq, $gt, $gte, $in, $lt, $lte, $ne, $nin, $not, $expr, $jsonSchema, $mod, $regex, $options, $text, $geoIntersects, $geoWithin, $near, $nearSphere, $elemMatch, $size, $bitsAllClear, $bitsAllSet, $bitsAnyClear, $bitsAnySet } = obj;
 	let query: string[] = [];
 	if ($or) {
 		for (const $or_def of $or) {
