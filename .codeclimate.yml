@@ -12,6 +12,10 @@ checks:
     method-lines:
         config:
             threshold: 40
+	similar-code:
+        config:
+            threshold: 80
+
 exclude_patterns:
     - docs/
     - .nyc_output/
