@@ -66,6 +66,8 @@ export function prepare (title:string, TestContext:any, Rol:typeof rol, Post:any
 			expect(await TestContext.rols.where({name:{$regex:/r.*/}}).find(), 'Check length 20').to.have.lengthOf(20);
 			expect(await TestContext.rols.where({name:{$ne:'r20'}}).find(), 'Check length 19').to.have.lengthOf(19);
 			expect(await TestContext.rols.where({rdn:{$ne:3}}).find(), 'Check length bigger 1').to.have.lengthOf.above(1);
+			expect(await TestContext.rols.where({rdn:{$in:[3,5,1]}}).find(), 'Check length 20').to.have.lengthOf(20);
+			expect(await TestContext.rols.where({rdn:{$nin:[3,5,1]}}).find(), 'Check length 0').to.have.lengthOf(0);
 			expect(await TestContext.rols.where({rdn:3}).find(), 'Check length 2').to.have.lengthOf.above(1);
 			expect(await TestContext.rols.where({rdn:3}).orWhere({rdn:1}).orWhere({rdn:5}).find(), 'Check length').to.have.lengthOf(20);
 			// expect(await TestContext.rols.where({rdn:{$regex:/3/}}).orWhere({rdn:1}).orWhere({rdn:5}).find(), 'Regex Check length').to.have.lengthOf(20);
