@@ -62,8 +62,10 @@ export function prepare (title:string, TestContext:any, Rol:typeof rol, Post:any
 		});
 		it('Query Engine', async () => {
 			expect(await TestContext.rols.where({name:'r20'}).find(), 'Check length 1').to.have.lengthOf(1);
+			expect(await TestContext.rols.where({name:{$regex:/r20/}}).find(), 'Check length 1').to.have.lengthOf(1);
 			expect(await TestContext.rols.where({rdn:3}).find(), 'Check length 2').to.have.lengthOf.above(1);
 			expect(await TestContext.rols.where({rdn:3}).orWhere({rdn:1}).orWhere({rdn:5}).find(), 'Check length').to.have.lengthOf(20);
+			// expect(await TestContext.rols.where({rdn:{$regex:/3/}}).orWhere({rdn:1}).orWhere({rdn:5}).find(), 'Regex Check length').to.have.lengthOf(20);
 		});
 		it('Skip Limit', async () => {
 			expect(await TestContext.rols.skip(10).find()).to.have.lengthOf(10);
@@ -257,11 +259,13 @@ export function prepare (title:string, TestContext:any, Rol:typeof rol, Post:any
 		it('limit', async ()=>{
 			let take = Math.floor(Math.random()*3) + 1;
 			expect(await Rol.sort('rnd', Sorting.asc).limit(take).find()).to.have.lengthOf(take);
+			expect(await Rol.limit(take).find()).to.have.lengthOf(take);
 		});
 
 		it('take', async ()=>{
 			let take = Math.floor(Math.random()*10) + 1;
 			expect(await Rol.sort('rnd', Sorting.asc).take(take).find()).to.have.lengthOf(take);
+			expect(await Rol.take(take).find()).to.have.lengthOf(take);
 		});
 		it('skip', async ()=>{
 			let take = Math.floor(Math.random()*10) + 1;
@@ -274,6 +278,9 @@ export function prepare (title:string, TestContext:any, Rol:typeof rol, Post:any
 			expect(await Rol.count()).to.be.equals(20);
 			expect(await Rol.skip(10).count(true)).to.be.equals(10);
 			expect(await Rol.skip(10).count(false)).to.be.equals(20);
+		});
+		it('toId', async ()=>{
+			console.log(Rol.toId('hola'));
 		});
 	});
 }

@@ -50,9 +50,9 @@ export class Repository extends Model {
 	static where<T extends Model>(this:new()=>T,query: FilterQuery<T> = {}) : MySQLXCollection<T> {
 		return (this as any).objects.where(query);
 	}
-	static orWhere<T extends Model>(this:new()=>T, query: FilterQuery<T>) : MySQLXCollection<T> {
-		return (this as any).objects.orWhere();
-	}
+	// static orWhere<T extends Model>(this:new()=>T, query: FilterQuery<T>) : MySQLXCollection<T> {
+	// 	return (this as any).objects.orWhere();
+	// }
 	static limit<T extends Model>(this:new()=>T,n: number) : MySQLXCollection<T> {
 		return (this as any).objects.limit(n);
 	}

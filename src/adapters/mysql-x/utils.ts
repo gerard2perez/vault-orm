@@ -32,7 +32,6 @@ function toQuery(obj: any = {}) {
 		} else {
 			return query.join(' OR ');
 		}
-		delete obj.$or;
 	} else if ($and) {
 		let pre = [];
 		for (const $and_def of $and) {
@@ -44,17 +43,23 @@ function toQuery(obj: any = {}) {
 		query.push(`( ${pre.join(' AND ')} )`.replace('AND __OR__ AND', ') OR ('));
 		return query;
 	}
+	commonOperators(query, obj);
+	recurseToQuery(obj, query);
+	return query.filter(f=>f);
+}
+function commonOperators(query: string[], obj: any) {
+	let { $eq, $gt, $gte, $in, $lt, $lte, $ne, $nin, $regex } = obj;
 	equalOrNot($ne, query, obj, '!=', '$ne');
 	equalOrNot($eq, query, obj, '=', '$eq');
-	if($regex) {
+	if ($regex) {
 		delete obj.$regex;
-		query.push(`REGEXP_LIKE($property$, '${$regex.toString().replace(/\//g, '')}')`);
+		query.push(`REGEXP '.*${$regex.toString().replace(/\//g, '')}.*'`);
 	}
 	if ($in) {
 		delete obj.$in;
 		query.push(`IN ('${$in.join("', '")}')`);
 	}
-	if($nin) {
+	if ($nin) {
 		delete obj.$nin;
 		query.push(`NOT IN ('${$nin.join("', '")}')`);
 	}
@@ -62,8 +67,6 @@ function toQuery(obj: any = {}) {
 	deleteAndPush(isNumber, $lte, obj, query, '<=', '$lte');
 	deleteAndPush(isNumber, $gt, obj, query, '>', '$gt');
 	deleteAndPush(isNumber, $lt, obj, query, '<', '$lt');
-	recurseToQuery(obj, query);
-	return query.filter(f=>f);
 }
 function recurseToQuery(obj:any, query:any) {
 	if(obj instanceof Object) {

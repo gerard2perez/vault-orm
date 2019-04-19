@@ -2,7 +2,7 @@ import { VaultModel } from "../../model";
 import { ObjectId } from "bson";
 
 export class Model extends VaultModel<ObjectId> {
-	constructor(information: any = {}) {
+	constructor(information: any) {
 		super(information);
 	}
 	protected async persist(connection: any, update_object: any) {

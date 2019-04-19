@@ -51,9 +51,9 @@ export class Repository  extends Model  {
 	static where<T extends Model>(this:new()=>T,query: FilterQuery<T> = {}) : MongoCollection<T> {
 		return (this as any).objects.where(query);
 	}
-	static orWhere<T extends Model>(this:new()=>T, query: FilterQuery<T>) : MongoCollection<T> {
-		return (this as any).objects.orWhere();
-	}
+	// static orWhere<T extends Model>(this:new()=>T, query: FilterQuery<T>) : MongoCollection<T> {
+	// 	return (this as any).objects.orWhere();
+	// }
 	static limit<T extends Model>(this:new()=>T,n: number) : MongoCollection<T> {
 		return (this as any).objects.limit(n);
 	}
