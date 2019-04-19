@@ -75,40 +75,40 @@ export class MongoCollection<T extends VaultModel<ObjectId>> extends VaultCollec
 		let {result: {n, nModified}} = await this.collection.updateMany(query, {$set: keys});
 		return n>= nModified && nModified > 0;
 	}
-	async findOrCreate(query: FilterQuery<T>, keys: Partial<T> = {}) {
-		const { executionContext } = this;
-		let item = await executionContext.firstOrDefault(query);
-		if (!item) {
-			for (const key of Object.keys(keys)) {
-				query[key] = keys[key];
-			}
-			item = Reflect.construct(executionContext.BaseClass, [query]) as T;
-			await item.save();
-		} else {
-			item = Reflect.construct(executionContext.BaseClass, [item]);
-		}
-		return item;
-	}
+	// async findOrCreate(query: FilterQuery<T>, keys: Partial<T> = {}) {
+	// 	const { executionContext } = this;
+	// 	let item = await executionContext.firstOrDefault(query);
+	// 	if (!item) {
+	// 		for (const key of Object.keys(keys)) {
+	// 			query[key] = keys[key];
+	// 		}
+	// 		item = Reflect.construct(executionContext.BaseClass, [query]) as T;
+	// 		await item.save();
+	// 	} else {
+	// 		item = Reflect.construct(executionContext.BaseClass, [item]);
+	// 	}
+	// 	return item;
+	// }
 	findAll() {
 		const { executionContext } = this;
 		return executionContext.toArray(executionContext.collection.find<T>({}));
 	}
-	where(query: FilterQuery<T> = {}) {
+	where(query: FilterQuery<T> ) {
 		const { executionContext } = this;
 		executionContext.__where__['$and'] = executionContext.__where__['$and'] || [];
 		executionContext.__where__['$and'].push(query);
 		return executionContext;
 	}
-	orWhere(query: FilterQuery<T>) {
-		const { executionContext } = this;
-		executionContext.__where__['$or'] = executionContext.__where__['$or'] || [];
-		executionContext.__where__['$or'].push(query);
-		if (executionContext.__where__['$and']) {
-			executionContext.__where__['$or'].push({ '$and': executionContext.__where__['$and'] });
-			delete executionContext.__where__['$and'];
-		}
-		return executionContext;
-	}
+	// orWhere(query: FilterQuery<T>) {
+	// 	const { executionContext } = this;
+	// 	executionContext.__where__['$or'] = executionContext.__where__['$or'] || [];
+	// 	executionContext.__where__['$or'].push(query);
+	// 	if (executionContext.__where__['$and']) {
+	// 		executionContext.__where__['$or'].push({ '$and': executionContext.__where__['$and'] });
+	// 		delete executionContext.__where__['$and'];
+	// 	}
+	// 	return executionContext;
+	// }
 	limit(n: number) {
 		const { executionContext } = this;
 		executionContext.__limit__ = n;

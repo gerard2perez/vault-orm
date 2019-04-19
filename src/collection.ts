@@ -112,9 +112,17 @@ export class VaultCollection<T extends VaultModel<any>> {
 	update(query: any, keys?: Object):Promise<any> {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
-	// istanbul ignore next
-	findOrCreate(query: any, keys: Partial<T> = {}):Promise<T> {
-		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
+	async findOrCreate(query: any, keys: Partial<T> = {}):Promise<T> {
+		const { executionContext } = this;
+        let item = await executionContext.firstOrDefault(query);
+        if (!item) {
+            for (const key of Object.keys(keys)) {
+                query[key] = keys[key];
+            }
+            item = Reflect.construct(executionContext.BaseClass, [query]) as T;
+            await item.save();
+        }
+        return item;
 	}
 	// istanbul ignore next
 	findAll() : Promise<T[]> {
@@ -125,12 +133,18 @@ export class VaultCollection<T extends VaultModel<any>> {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
 	// istanbul ignore next
-	where(query: any = {}): this {
+	where(query: any): this {
 		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
 	}
-	// istanbul ignore next
 	orWhere(query: any): this {
-		throw new NotInmplemented('Please implement this method in your Collection class adapter.');
+		const { executionContext } = this;
+		executionContext.__where__['$or'] = executionContext.__where__['$or'] || [];
+		executionContext.__where__['$or'].push(query);
+		if (executionContext.__where__['$and']) {
+			executionContext.__where__['$or'].push({ '$and': executionContext.__where__['$and'] });
+			delete executionContext.__where__['$and'];
+		}
+		return executionContext;
 	}
 	// istanbul ignore next
 	limit(n: number) : this {

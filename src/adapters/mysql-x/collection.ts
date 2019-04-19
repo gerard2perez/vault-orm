@@ -15,22 +15,22 @@ export class MySQLXCollection<T extends VaultModel<uuidv4>> extends VaultCollect
 	protected __limit__: number = 0
 	protected __skip__: number = 0
 	protected __sort__:string[] = []
-	where(query: Partial<T> | any = {}) {
+	where(query: Partial<T> | any) {
 		const { executionContext } = this;
 		executionContext.__where__['$and'] = this.__where__['$and'] || [];
 		executionContext.__where__['$and'].push(query);
 		return executionContext;
 	}
-	orWhere(query: Partial<T>) {
-		const { executionContext } = this;
-		executionContext.__where__['$or'] = executionContext.__where__['$or'] || [];
-		executionContext.__where__['$or'].push(query);
-		if (executionContext.__where__['$and']) {
-			executionContext.__where__['$or'].push({ '$and': executionContext.__where__['$and'] });
-			delete executionContext.__where__['$and'];
-		}
-		return executionContext;
-	}
+	// orWhere(query: Partial<T>) {
+	// 	const { executionContext } = this;
+	// 	executionContext.__where__['$or'] = executionContext.__where__['$or'] || [];
+	// 	executionContext.__where__['$or'].push(query);
+	// 	if (executionContext.__where__['$and']) {
+	// 		executionContext.__where__['$or'].push({ '$and': executionContext.__where__['$and'] });
+	// 		delete executionContext.__where__['$and'];
+	// 	}
+	// 	return executionContext;
+	// }
 	public fields(query: Projection<T>) {
 		const { executionContext } = this;
 		executionContext.__projection__ = query;
@@ -53,18 +53,18 @@ export class MySQLXCollection<T extends VaultModel<uuidv4>> extends VaultCollect
 			return false;
 		});
 	}
-	async findOrCreate(query: Partial<T>, keys: Object={}) {
-		const { executionContext } = this;
-		let item = await executionContext.firstOrDefault(query);
-		if (!item) {
-			for (const key of Object.keys(keys)) {
-				query[key] = keys[key];
-			}
-			item = Reflect.construct(executionContext.BaseClass, [query]) as T;
-			await item.save();
-		}
-		return item;
-	}
+	// async findOrCreate(query: Partial<T>, keys: Object={}) {
+	// 	const { executionContext } = this;
+	// 	let item = await executionContext.firstOrDefault(query);
+	// 	if (!item) {
+	// 		for (const key of Object.keys(keys)) {
+	// 			query[key] = keys[key];
+	// 		}
+	// 		item = Reflect.construct(executionContext.BaseClass, [query]) as T;
+	// 		await item.save();
+	// 	}
+	// 	return item;
+	// }
 	protected toArray(cursor: any): Promise<T[]> {
 		const { executionContext } = this;
 		let results: T[] = [];
