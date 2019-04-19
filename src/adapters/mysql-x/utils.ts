@@ -18,7 +18,7 @@ function deleteAndPush(check:any, $in: any, obj: any, query: string[], operation
 		query.push(`${operation} ${$in}`);
 	}
 }
-function toQuery(obj: any = {}) {
+function toQuery(obj: any) {
 	let { $and, $or, $eq, $gt, $gte, $in, $lt, $lte, $ne, $nin, $not, $expr, $jsonSchema, $mod, $regex, $options, $text, $geoIntersects, $geoWithin, $near, $nearSphere, $elemMatch, $size, $bitsAllClear, $bitsAllSet, $bitsAnyClear, $bitsAnySet } = obj;
 	let query: string[] = [];
 	if ($or) {
@@ -78,13 +78,7 @@ function recurseToQuery(obj:any, query:any) {
 				delete obj[key].$gte;
 			}
 			// @ts-ignore
-			query.push(toQuery(obj[key]).map(q => {
-				if(q.includes('$property$')) {
-					return q.replace('$property$', key);
-				} else {
-					return `${key} ${q}`;
-				}
-			}).join(' and '));
+			query.push(toQuery(obj[key]).map(q => `${key} ${q}`).join(' and '));
 		}
 	} else {
 		if(isNumber(obj) || isBoolean(obj)) {
@@ -105,7 +99,7 @@ export function toSQLSelect(query: Projection<any> ) {
 	}
 	return fields;
 }
-export function toSQLQuery (obj:any = {}):string {
+export function toSQLQuery (obj:any):string {
 	let res = toQuery(obj);
 	let final = (res instanceof Array ? res[0] : res);
 	final = (final || '').replace('(  )', '') || 'true';
