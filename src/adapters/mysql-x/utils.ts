@@ -53,7 +53,7 @@ function commonOperators(query: string[], obj: any) {
 	equalOrNot($eq, query, obj, '=', '$eq');
 	if ($regex) {
 		delete obj.$regex;
-		query.push(`REGEXP '.*${$regex.toString().replace(/\//g, '')}.*'`);
+		query.push(`REGEXP '${$regex.toString().replace(/\//g, '')}'`);
 	}
 	if ($in) {
 		delete obj.$in;
