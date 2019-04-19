@@ -10,7 +10,7 @@
 
 # Installation
 ```sh
-npm install @bitsun/vault-orm
+npm install @gerard2p/vault-orm
 ```
 
 ## About
@@ -21,8 +21,8 @@ Vault ORM is part of the Kane framework and evolution of Koaton. but rigth now i
 This sample shows how to create a model
 ```typescript
 // database/posts.ts
-import { Model } from '@bitsun/vault-orm/adapters/mongo';
-import { Related, List, Property, HasMany, HasOne, BelongsTo } from '@bitsun/vault-orm/types';
+import { Model } from '@gerard2p/vault-orm/adapters/mongo';
+import { Related, List, Property, HasMany, HasOne, BelongsTo } from '@gerard2p/vault-orm/types';
 import { User } from './user';
 import { Comment } from './comment';
 export class Post extends Model {
@@ -36,7 +36,7 @@ Vault ORM will auto detect the types from typescript and aditionaly it has some 
 
 # Database
 ```typescript
-import { Collection, VaultORM, collection, RelationMode } from '@bitsun/vault-orm/adapters/mongo';
+import { Collection, VaultORM, collection, RelationMode } from '@gerard2p/vault-orm/adapters/mongo';
 import { Rigth } from './rigth';
 import { Rol } from './rol';
 import { User } from './user';

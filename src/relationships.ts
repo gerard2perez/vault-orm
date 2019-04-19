@@ -1,5 +1,5 @@
 /**
- * @module @bitsun/vault-orm/relationships
+ * @module @gerard2p/vault-orm/relationships
  */
 import { isBoolean } from "util";
 import { RelationMode, VaultORM } from ".";

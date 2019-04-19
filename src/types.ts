@@ -1,5 +1,5 @@
 /**
- * @module @bitsun/vault-orm/types
+ * @module @gerard2p/vault-orm/types
  */
 import "reflect-metadata";
 import { VaultModel } from "./model";

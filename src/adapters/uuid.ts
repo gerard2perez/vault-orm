@@ -1,5 +1,5 @@
 /**
- * @module @bitsun/vault-orm/adapters/uuid
+ * @module @gerard2p/vault-orm/adapters/uuid
  */
 import * as uuid from 'uuid/v4';
 import { type } from 'os';

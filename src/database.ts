@@ -1,5 +1,5 @@
 /**
- * @module @bitsun/vault-orm/database
+ * @module @gerard2p/vault-orm/database
  */
 import { VaultCollection } from "./collection";
 

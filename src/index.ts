@@ -1,5 +1,5 @@
 /**
- * @module @bitsun/vault-orm
+ * @module @gerard2p/vault-orm
  */
 import "reflect-metadata";
 import { MongoClientOptions } from "mongodb";

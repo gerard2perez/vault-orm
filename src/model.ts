@@ -1,5 +1,5 @@
 /**
- * @module @bitsun/vault-orm/model
+ * @module @gerard2p/vault-orm/model
  */
 import { RelationSingle, RelationShipMode } from "./relationships";
 import { VaultORM, RelationMode, DatabaseConfiguration, NotInmplemented } from "./";

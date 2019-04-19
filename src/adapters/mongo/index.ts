@@ -1,5 +1,5 @@
 /**
- * @module @bitsun/vault-orm/adapters/mongo
+ * @module @gerard2p/vault-orm/adapters/mongo
  */
 import { MongoClientOptions } from "mongodb";
 import { basename, dirname } from "path";

@@ -1,5 +1,5 @@
 /**
- * @module @bitsun/vault-orm/adapters/mysql-x
+ * @module @gerard2p/vault-orm/adapters/mysql-x
  */
 import { basename, dirname } from 'path';
 import { DatabaseConfiguration } from '../..';

@@ -1,5 +1,5 @@
 /**
- * @module @bitsun/vault-orm/collection
+ * @module @gerard2p/vault-orm/collection
  */
 import { VaultModel } from "./model";
 import * as inflector from 'inflection';
