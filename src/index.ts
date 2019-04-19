@@ -6,8 +6,7 @@ import { MongoClientOptions } from "mongodb";
 import { VaultCollection } from "./collection";
 import { VaultModel } from "./model";
 import { Database } from "./database";
-import { writeFileSync } from "fs";
-import { ensureDirSync } from "fs-extra";
+import { writeFileSync, existsSync, mkdirSync } from "fs";
 
 export class NotInmplemented extends Error {
 	constructor(msg:string = 'This method is not yet implemented.', ...args) {
@@ -69,7 +68,7 @@ export class VaultORM {
 					collections.push(DBBuilder.register(this[property]));
 				}
 			}
-			ensureDirSync('./migrations/');
+			if(!existsSync('./migrations/'))mkdirSync('./migrations/');
 			writeFileSync(`./migrations/${configuration.database}.${this.driver}.json`, JSON.stringify(METADATABASE, null, 2));
 			for(const property of properties) {
 				if(this[property] instanceof VaultCollection) {
