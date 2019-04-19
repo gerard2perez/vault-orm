@@ -1,6 +1,23 @@
 import { isBoolean, isNumber } from 'util';
 import { Projection } from '../../query';
 import { uuidv4 } from '../uuid';
+function equalOrNot($ne: any, query: string[], obj: any, operation:string, key:string) {
+	if ($ne) {
+		if (isNumber($ne) || isBoolean($ne)) {
+			query.push(`${operation} ${$ne}`);
+		}
+		else {
+			query.push(`${operation} '${$ne}'`);
+		}
+		delete obj[key];
+	}
+}
+function deleteAndPush(check:any, $in: any, obj: any, query: string[], operation:string, key:string) {
+	if (check($in)) {
+		delete obj[key];
+		query.push(`${operation} ${$in}`);
+	}
+}
 function toQuery(obj: any = {}) {
 	let { $and, $or, $eq, $gt, $gte, $in, $lt, $lte, $ne, $nin, $not, $expr, $jsonSchema, $mod, $regex, $options, $text, $geoIntersects, $geoWithin, $near, $nearSphere, $elemMatch, $size, $bitsAllClear, $bitsAllSet, $bitsAnyClear, $bitsAnySet } = obj;
 	let query: string[] = [];
@@ -27,27 +44,13 @@ function toQuery(obj: any = {}) {
 		query.push(`( ${pre.join(' AND ')} )`.replace('AND __OR__ AND', ') OR ('));
 		return query;
 	}
-	if($ne) {
-		if ( isNumber($ne) || isBoolean($ne) ) {
-			query.push(`!= ${$ne}`);
-		} else {
-			query.push(`!= '${$ne}'`);
-		}
-		delete obj.$ne;
-	}
-	if($eq) {
-		if ( isNumber($eq) || isBoolean($eq) ) {
-			query.push(`= ${$eq}`);
-		} else {
-			query.push(`= '${$eq}'`);
-		}
-		delete obj.$eq;
-	}
+	equalOrNot($ne, query, obj, '!=', '$ne');
+	equalOrNot($eq, query, obj, '=', '$eq');
 	if($regex) {
 		delete obj.$regex;
 		query.push(`REGEXP_LIKE($property$, '${$regex.toString().replace(/\//g, '')}')`);
 	}
-	if($in) {
+	if ($in) {
 		delete obj.$in;
 		query.push(`IN ('${$in.join("', '")}')`);
 	}
@@ -55,22 +58,14 @@ function toQuery(obj: any = {}) {
 		delete obj.$nin;
 		query.push(`NOT IN ('${$nin.join("', '")}')`);
 	}
-	if ( isNumber($gte)) {
-		delete obj.$gte;
-		query.push(`>= ${$gte}`);
-	}
-	if ( isNumber($lte)) {
-		delete obj.$lte;
-		query.push(`<= ${$lte}`);
-	}
-	if ( isNumber($gt)) {
-		delete obj.$gt;
-		query.push(`> ${$gt}`);
-	}
-	if ( isNumber($lt)) {
-		delete obj.$lt;
-		query.push(`< ${$lt}`);
-	}
+	deleteAndPush(isNumber, $gte, obj, query, '>=', '$gte');
+	deleteAndPush(isNumber, $lte, obj, query, '<=', '$lte');
+	deleteAndPush(isNumber, $gt, obj, query, '>', '$gt');
+	deleteAndPush(isNumber, $lt, obj, query, '<', '$lt');
+	recurseToQuery(obj, query);
+	return query.filter(f=>f);
+}
+function recurseToQuery(obj:any, query:any) {
 	if(obj instanceof Object) {
 		for(const key of Object.keys(obj)) {
 			if(!obj[key]){ query.push(`${key} = ''`); continue; };
@@ -95,7 +90,6 @@ function toQuery(obj: any = {}) {
 			query.push(`= '${obj}'`);
 		}
 	}
-	return query.filter(f=>f);
 }
 export function toSQLSelect(query: Projection<any> ) {
 	let fields:string[] = [];
