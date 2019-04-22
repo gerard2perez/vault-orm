@@ -250,7 +250,7 @@ export class VaultModel<ID> extends IVaultModel {
 	}
 	async save() {
 		let { mask, raw, own, relations } = Object.getPrototypeOf(this).newSchema;
-		if (!this.updated) this.created = new Date();
+		if (!this.id) this.created = new Date();
 		this.updated = new Date();
 		let update_object = {};
 		for (const key of Object.keys(raw)) {
